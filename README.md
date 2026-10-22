@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Smidify
 
-## Getting Started
+Marketing site, blog, project portfolio and admin panel. Next.js (App Router, Cache Components), Tailwind v4, Supabase (Postgres, Auth, Storage), Zod.
 
-First, run the development server:
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+cp .env.local.example .env.local   # then fill in the values below
+supabase start                      # local stack (optional)
+supabase db reset                   # applies supabase/migrations + seed.sql
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL. Also drives `images.remotePatterns` in `next.config.ts`, so Storage images work with `next/image`. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon key. Public reads and admin session calls; RLS enforces access. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only. Never import it in client code. |
+| `NEXT_PUBLIC_SITE_URL` | Canonical URL (sitemap, RSS, Open Graph). |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+- `pnpm dev` / `pnpm build` / `pnpm start`
+- `pnpm typecheck`, `pnpm lint`
+- `pnpm db:types` regenerates `src/lib/types/database.ts` from the local database
 
-To learn more about Next.js, take a look at the following resources:
+## Admin
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Routes under `/admin` require a Supabase Auth user listed in the `admins` table.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Add an admin**
 
-## Deploy on Vercel
+1. Create the user: Supabase dashboard → Authentication → Users → Add user (email + password).
+2. Grant access in the SQL editor:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```sql
+   insert into admins (user_id)
+   select id from auth.users where email = 'you@example.com';
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. Sign in at `/admin/login`.
+
+Editors autosave drafts 10 seconds after a change. Published items are never autosaved: use **Save changes** or **Update**. Publishing sets `published_at` once, and the public pages refresh on the next request (cache tags plus `revalidatePath`). Preview opens `/admin/preview/{projects|posts}/{id}`, which renders the same components as the public page from the draft row.
+
+Images upload from the browser to the public `media` bucket (`projects/{id}/…`, `posts/{id}/…`) under the admin's session; alt text is required.
+
+## Deploy (Vercel + Supabase)
+
+1. Create a Supabase project, then `supabase link --project-ref <ref>` and `supabase db push` (applies both migrations; run `supabase db push` before first deploy, since the code expects `cover_alt` / `gallery_alts`).
+2. Optionally seed: run `supabase/seed.sql` in the SQL editor.
+3. Import the repo in Vercel and set the four environment variables above (Production and Preview).
+4. Add the first admin (see above) and set Supabase Auth → URL Configuration → Site URL to the Vercel domain.
+5. The Storage host is allowed automatically because `next.config.ts` builds `images.remotePatterns` from `NEXT_PUBLIC_SUPABASE_URL`.

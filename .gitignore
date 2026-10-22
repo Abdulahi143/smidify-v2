@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# keep the env template, hide real env files
+!.env.local.example
+
+# build prompts / agent briefs
+/prompts/
+AGENT.md
+AGENTS.md
+CLAUDE.md
+.claude/
