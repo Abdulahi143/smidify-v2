@@ -1,0 +1,222 @@
+[
+  {
+    "key": "metaTitle",
+    "group": "Search & browser",
+    "label": "Page title"
+  },
+  {
+    "key": "metaDescription",
+    "group": "Search & browser",
+    "label": "Page description"
+  },
+  {
+    "key": "navAbout",
+    "group": "Navigation",
+    "label": "About link"
+  },
+  {
+    "key": "navExpertise",
+    "group": "Navigation",
+    "label": "Expertise link"
+  },
+  {
+    "key": "navProjects",
+    "group": "Navigation",
+    "label": "Projects link"
+  },
+  {
+    "key": "navMilestones",
+    "group": "Navigation",
+    "label": "Milestones link"
+  },
+  {
+    "key": "navVision",
+    "group": "Navigation",
+    "label": "Vision link"
+  },
+  {
+    "key": "navTagline",
+    "group": "Navigation",
+    "label": "Header tagline"
+  },
+  {
+    "key": "navContact",
+    "group": "Navigation",
+    "label": "Contact link"
+  },
+  {
+    "key": "heroLabel",
+    "group": "Hero",
+    "label": "Small heading"
+  },
+  {
+    "key": "heroTitle",
+    "group": "Hero",
+    "label": "Headline"
+  },
+  {
+    "key": "heroDescription",
+    "group": "Hero",
+    "label": "Introduction"
+  },
+  {
+    "key": "heroLink",
+    "group": "Hero",
+    "label": "Discover link"
+  },
+  {
+    "key": "heroFootnote",
+    "group": "Hero",
+    "label": "Bottom tagline"
+  },
+  {
+    "key": "aboutLabel",
+    "group": "About",
+    "label": "Section label"
+  },
+  {
+    "key": "aboutTitle",
+    "group": "About",
+    "label": "Heading"
+  },
+  {
+    "key": "aboutIntro",
+    "group": "About",
+    "label": "Introduction"
+  },
+  {
+    "key": "aboutBody",
+    "group": "About",
+    "label": "Team description"
+  },
+  {
+    "key": "expertiseLabel",
+    "group": "Expertise",
+    "label": "Section label"
+  },
+  {
+    "key": "expertiseTitle",
+    "group": "Expertise",
+    "label": "Heading"
+  },
+  {
+    "key": "expertiseIntro",
+    "group": "Expertise",
+    "label": "Introduction"
+  },
+  {
+    "key": "service1Title",
+    "group": "Expertise",
+    "label": "First service title"
+  },
+  {
+    "key": "service1Body",
+    "group": "Expertise",
+    "label": "First service description"
+  },
+  {
+    "key": "service2Title",
+    "group": "Expertise",
+    "label": "Second service title"
+  },
+  {
+    "key": "service2Body",
+    "group": "Expertise",
+    "label": "Second service description"
+  },
+  {
+    "key": "service3Title",
+    "group": "Expertise",
+    "label": "Third service title"
+  },
+  {
+    "key": "service3Body",
+    "group": "Expertise",
+    "label": "Third service description"
+  },
+  {
+    "key": "projectsLabel",
+    "group": "Projects section",
+    "label": "Section label"
+  },
+  {
+    "key": "projectsTitle",
+    "group": "Projects section",
+    "label": "Heading"
+  },
+  {
+    "key": "projectsIntro",
+    "group": "Projects section",
+    "label": "Introduction"
+  },
+  {
+    "key": "projectsNote",
+    "group": "Projects section",
+    "label": "Note below projects"
+  },
+  {
+    "key": "milestonesLabel",
+    "group": "Milestones section",
+    "label": "Section label"
+  },
+  {
+    "key": "milestonesTitle",
+    "group": "Milestones section",
+    "label": "Heading"
+  },
+  {
+    "key": "milestonesIntro",
+    "group": "Milestones section",
+    "label": "Introduction"
+  },
+  {
+    "key": "milestonesNote",
+    "group": "Milestones section",
+    "label": "Note below timeline"
+  },
+  {
+    "key": "visionLabel",
+    "group": "Vision",
+    "label": "Section label"
+  },
+  {
+    "key": "visionTitle",
+    "group": "Vision",
+    "label": "Heading"
+  },
+  {
+    "key": "visionBody",
+    "group": "Vision",
+    "label": "Description"
+  },
+  {
+    "key": "contactLabel",
+    "group": "Contact",
+    "label": "Section label"
+  },
+  {
+    "key": "contactTitle",
+    "group": "Contact",
+    "label": "Heading"
+  },
+  {
+    "key": "contactIntro",
+    "group": "Contact",
+    "label": "Invitation"
+  },
+  {
+    "key": "contactEmail",
+    "group": "Contact",
+    "label": "Email address"
+  },
+  {
+    "key": "footerTagline",
+    "group": "Footer",
+    "label": "Tagline"
+  },
+  {
+    "key": "footerTop",
+    "group": "Footer",
+    "label": "Back to top link"
+  }
+]

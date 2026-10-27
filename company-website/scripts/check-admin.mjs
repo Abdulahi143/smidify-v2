@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+const base='http://127.0.0.1:5174';
+const auth={'oai-authenticated-user-id':'local_seedy','oai-authenticated-user-email':'seedy@sites.test',Origin:base,'Content-Type':'application/json'};
+async function call(path,method='GET',body,headers=auth){const r=await fetch(base+path,{method,headers,body:body===undefined?undefined:JSON.stringify(body)});const text=await r.text();let data;try{data=JSON.parse(text)}catch{data=text}return {status:r.status,data};}
+const initial=await call('/api/admin/content');assert.equal(initial.status,200);const original=structuredClone(initial.data.content);let revision=initial.data.revision;
+for(const endpoint of ['/api/admin/content','/api/admin/publish','/preview'])assert.equal((await call(endpoint,endpoint.endsWith('publish')?'POST':'GET',endpoint.endsWith('publish')?{revision}:undefined,{})).status,403);
+assert.equal((await call('/api/admin/content','PUT',{revision,content:original},{...auth,'oai-authenticated-user-email':'visitor@example.com'})).status,403);
+assert.ok((await call('/api/admin/content','PUT',{revision,content:original},{...auth,Origin:'https://other.example'})).status>=400);
+const invalid=structuredClone(original);invalid.projects[0].url='javascript:alert(1)';assert.equal((await call('/api/admin/content','PUT',{revision,content:invalid})).status,400);
+const missing=structuredClone(original);delete missing.copy.heroTitle;assert.equal((await call('/api/admin/content','PUT',{revision,content:missing})).status,400);
+const content=structuredClone(original),marker='QA draft <script>alert("test")</script>';content.copy.aboutIntro=marker;content.projects.push({...content.projects[0],id:'qa-extra',title:'QA project',placeholder:false});content.milestones.push({id:'qa-milestone',title:'QA milestone',date:'2026',description:'Local test'});
+const save=await call('/api/admin/content','PUT',{revision,content});assert.equal(save.status,200);revision=save.data.revision;
+assert.equal((await call('/api/admin/content')).data.content.projects.at(-1).title,'QA project');
+assert.equal((await call('/api/admin/content','PUT',{revision:revision-1,content})).status,409);
+let live=await call('/');assert.equal(live.status,200);assert.ok(!live.data.includes('QA draft'));
+const preview=await call('/preview');assert.ok(preview.data.includes('QA draft &lt;script&gt;'));assert.ok(preview.data.includes('QA project'));assert.ok(preview.data.includes('QA milestone'));assert.ok(!preview.data.includes('{{'));
+assert.equal((await call('/api/admin/publish','POST',{revision:revision-1})).status,409);
+assert.equal((await call('/api/admin/publish','POST',{revision})).status,200);
+live=await call('/');assert.ok(live.data.includes('QA draft &lt;script&gt;'));assert.ok(!live.data.includes(marker));
+const restore=await call('/api/admin/content','PUT',{revision,content:original});assert.equal(restore.status,200);assert.equal((await call('/api/admin/publish','POST',{revision:restore.data.revision})).status,200);
+console.log('Passed: admin authorization, origin checks, content validation, concurrent edits, draft isolation, persistent projects/milestones, safe rendering, publishing, and content restoration.');
