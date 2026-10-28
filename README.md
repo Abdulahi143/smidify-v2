@@ -1,23 +1,66 @@
-# Smidify company website
+# Smidify
 
-The homepage preserves the original Smidify design. `/admin` provides a protected content editor for website wording, project case studies, and milestones.
+Marketing site, blog, project portfolio and admin panel. Next.js (App Router, Cache Components), Tailwind v4, Supabase (Postgres, Auth, Storage), Zod.
 
-## Editing
+## Setup
 
-Sign in to `/admin` with an approved administrator account. Save draft stores work without changing the website. Preview draft saves and opens `/preview`. Publish changes copies the reviewed draft to the live homepage. Add, remove, or reorder projects and milestones in their respective tabs. Project images use HTTPS image URLs.
+```bash
+pnpm install
+cp .env.local.example .env.local   # then fill in the values below
+supabase start                      # local stack (optional)
+supabase db reset                   # applies supabase/migrations + seed.sql
+pnpm dev
+```
 
-Drafts and published content live in Cloudflare D1, not browser storage. The initial content comes from `lib/default-content.json`. The template in `lib/site-template.ts` keeps the existing design; editable text is escaped before rendering. Simultaneous edits use revision checks to prevent silent overwrites.
+## Environment
 
-## Access
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL. Also drives `images.remotePatterns` in `next.config.ts`, so Storage images work with `next/image`. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon key. Public reads and admin session calls; RLS enforces access. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only. Never import it in client code. |
+| `NEXT_PUBLIC_SITE_URL` | Canonical URL (sitemap, RSS, Open Graph). |
 
-Sites provides ChatGPT sign-in and trusted identity headers. The server-only `ADMIN_EMAILS` environment setting lists approved administrator emails, separated by commas. All draft, preview, save, and publish endpoints independently enforce this allowlist. Publishing and saving also require a same-origin request. No default password or public registration is provided. Site audience is managed separately by Sites.
+## Scripts
 
-## Local development
+- `pnpm dev` / `pnpm build` / `pnpm start`
+- `pnpm typecheck`, `pnpm lint`
+- `pnpm db:types` regenerates `src/lib/types/database.ts` from the local database
 
-Use Node 22.13 or newer and the Sites dependency installer. Set `ADMIN_EMAILS=seedy@sites.test` in ignored `.dev.vars` for the starter's local mock identity. Production uses the separately configured Sites environment setting.
+## Admin
 
-Generate schema migrations with `npm run db:generate`. Build with the Sites build helper, then apply pending SQL locally using the D1 commands documented by the Sites starter. `npm run dev -- --hostname 127.0.0.1 --port 5173` serves the editable preview.
+Routes under `/admin` require a Supabase Auth user listed in the `admins` table.
 
-`npx tsc --noEmit` checks types. `scripts/check-admin.mjs` tests admin authorization, validation, revision conflicts, draft isolation, safe HTML rendering, and publish behavior against a local production preview on port 5174. Launch it with `npm start -- --port 5174 --var ADMIN_EMAILS:seedy@sites.test` after local migrations. The script modifies and restores only the local database. Never direct test identity headers at a hosted site.
+**Add an admin**
 
-Deploy through the Sites source workflow, using the existing project ID and D1 migration files. Ignore local credentials, `.dev.vars`, `.sites-runtime`, and `.wrangler` state. The original static design is retained in `website-source/original.html` for reference.
+1. Create the user: Supabase dashboard → Authentication → Users → Add user (email + password).
+2. Grant access in the SQL editor:
+
+   ```sql
+   insert into admins (user_id)
+   select id from auth.users where email = 'you@example.com';
+   ```
+
+3. Sign in at `/admin/login`.
+
+Editors autosave drafts 10 seconds after a change. Published items are never autosaved: use **Save changes** or **Update**. Publishing sets `published_at` once, and the public pages refresh on the next request (cache tags plus `revalidatePath`). Preview opens `/admin/preview/{projects|posts}/{id}`, which renders the same components as the public page from the draft row.
+
+Images upload from the browser to the public `media` bucket (`projects/{id}/…`, `posts/{id}/…`) under the admin's session; alt text is required.
+
+## Deploy (Vercel + Supabase)
+
+1. Create a Supabase project, then `supabase link --project-ref <ref>` and `supabase db push` (applies both migrations; run `supabase db push` before first deploy, since the code expects `cover_alt` / `gallery_alts`).
+2. Optionally seed: run `supabase/seed.sql` in the SQL editor.
+3. Import the repo in Vercel and set the four environment variables above (Production and Preview).
+4. Add the first admin (see above) and set Supabase Auth → URL Configuration → Site URL to the Vercel domain.
+5. The Storage host is allowed automatically because `next.config.ts` builds `images.remotePatterns` from `NEXT_PUBLIC_SUPABASE_URL`.
+
+## Company homepage and milestones
+
+The approved green company homepage, keystone sculpture, and Smidify™ logo now use native React components inside the existing Next.js app. Projects are loaded from the existing Supabase `projects` table and link to the existing `/work/[slug]` pages. Project publishing, images, blog, quote forms, pipeline, and login retain their original implementation.
+
+Apply `supabase/migrations/0004_company_content.sql` with the normal `supabase db push` workflow before using the added `/admin/website` editor. It stores website copy and milestones as draft/published documents in Supabase, protected by the existing `admins` table and `is_admin()` policy. No additional accounts, hosting services, or environment variables are needed. The homepage uses the approved default copy until the first publication; it also tolerates the new table not yet existing during rollout.
+
+Open **Website & milestones** in the existing admin sidebar. Save draft does not change public content; Preview draft opens `/admin/preview/website`; Publish changes updates the website and invalidates its Next.js cache. Projects continue to be edited at `/admin/projects`. Concurrent saves and publishes check draft revision numbers rather than silently overwriting another editor.
+
+The repository's original package manifest, lockfile, Next.js configuration, Supabase auth, and existing database migrations are retained. The Sites/Vinext/Cloudflare scaffolding is not part of this app. Development and deployment continue to use the existing `pnpm dev`, `pnpm build`, and Vercel/Supabase setup above.
