@@ -1,16 +1,18 @@
 import { Footer } from "@/components/site/Footer";
 import { Nav } from "@/components/site/Nav";
-
-export default function SiteLayout({
+import { getCompanyContent } from "@/lib/queries/company";
+import "./company.css";
+export default async function SiteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { copy } = await getCompanyContent();
   return (
-    <>
-      <Nav />
+    <div className="company-site">
+      <Nav copy={copy} />
       <main>{children}</main>
-      <Footer />
-    </>
+      <Footer copy={copy} />
+    </div>
   );
 }
