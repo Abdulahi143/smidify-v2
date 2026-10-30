@@ -54,3 +54,13 @@ Images upload from the browser to the public `media` bucket (`projects/{id}/…`
 3. Import the repo in Vercel and set the four environment variables above (Production and Preview).
 4. Add the first admin (see above) and set Supabase Auth → URL Configuration → Site URL to the Vercel domain.
 5. The Storage host is allowed automatically because `next.config.ts` builds `images.remotePatterns` from `NEXT_PUBLIC_SUPABASE_URL`.
+
+## Company homepage and milestones
+
+The approved green company homepage, keystone sculpture, and Smidify™ logo now use native React components inside the existing Next.js app. Projects are loaded from the existing Supabase `projects` table and link to the existing `/work/[slug]` pages. Project publishing, images, blog, quote forms, pipeline, and login retain their original implementation.
+
+Apply `supabase/migrations/0004_company_content.sql` with the normal `supabase db push` workflow before using the added `/admin/website` editor. It stores website copy and milestones as draft/published documents in Supabase, protected by the existing `admins` table and `is_admin()` policy. No additional accounts, hosting services, or environment variables are needed. The homepage uses the approved default copy until the first publication; it also tolerates the new table not yet existing during rollout.
+
+Open **Website & milestones** in the existing admin sidebar. Save draft does not change public content; Preview draft opens `/admin/preview/website`; Publish changes updates the website and invalidates its Next.js cache. Projects continue to be edited at `/admin/projects`. Concurrent saves and publishes check draft revision numbers rather than silently overwriting another editor.
+
+The repository's original package manifest, lockfile, Next.js configuration, Supabase auth, and existing database migrations are retained. The Sites/Vinext/Cloudflare scaffolding is not part of this app. Development and deployment continue to use the existing `pnpm dev`, `pnpm build`, and Vercel/Supabase setup above.

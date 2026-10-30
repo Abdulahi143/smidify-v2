@@ -16,6 +16,7 @@ export function Sidebar({ counts, email }: { counts: AdminCounts; email: string 
     { href: "/admin", label: "Overview" },
     { href: "/admin/pipeline", label: "Pipeline", count: counts.pipeline },
     { href: "/admin/projects", label: "Projects", count: counts.projects },
+    { href: "/admin/website", label: "Website & milestones" },
     { href: "/admin/posts", label: "Blog posts", count: counts.posts },
     { href: "/admin/services", label: "Services", count: counts.services },
     { href: "/admin/quotes", label: "Quote requests", count: counts.quotes },
