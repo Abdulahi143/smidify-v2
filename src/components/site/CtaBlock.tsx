@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { buttonStyles } from "@/components/ui";
 
-export function CtaBlock({
-  title,
-  body,
-}: {
-  title: string;
-  body: string;
-}) {
+export function CtaBlock({ title, body }: { title: string; body: string }) {
   return (
-    <section className="py-[84px] md:py-[112px]" aria-labelledby="cta-title">
+    <section
+      className="inner-cta py-[84px] md:py-[112px]"
+      aria-labelledby="cta-title"
+    >
+      <p className="eyebrow">Your next step starts here</p>
       <h2 id="cta-title" className="text-[32px] leading-[1.15] md:text-[44px]">
         {title}
       </h2>
