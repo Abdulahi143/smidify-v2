@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CtaBlock, PlateText, ProcessRail } from "@/components/site";
+import { CtaBlock, ProcessRail } from "@/components/site";
 import { PROCESS_STAGES } from "@/lib/content/process";
 
 export function generateMetadata(): Metadata {
@@ -10,7 +10,7 @@ export function generateMetadata(): Metadata {
   };
 }
 
-const wrap = "mx-auto max-w-[1280px] px-5 md:px-[72px]";
+const wrap = "inner-page process-page home-container";
 
 export default function ProcessPage() {
   return (
@@ -38,15 +38,18 @@ export default function ProcessPage() {
             aria-labelledby={`stage-${s.key}`}
             className="grid gap-5 md:grid-cols-[120px_5fr_6fr] md:gap-12"
           >
-            <PlateText className="text-[64px] leading-[1] font-bold">
-              {s.num}
-            </PlateText>
+            <span className="section-number">{s.num}</span>
             <div>
-              <p className="meta text-cyan-700 text-[12px]">{s.duration}</p>
-              <h2 id={`stage-${s.key}`} className="mt-[5px] text-[28px] leading-9 md:text-[34px] md:leading-10">
+              <p className="meta text-[12px] text-cyan-700">{s.duration}</p>
+              <h2
+                id={`stage-${s.key}`}
+                className="mt-[5px] text-[28px] leading-9 md:text-[34px] md:leading-10"
+              >
                 {s.name}
               </h2>
-              <p className="text-ink/78 mt-[15px] text-[17px] leading-7">{s.body}</p>
+              <p className="text-ink/78 mt-[15px] text-[17px] leading-7">
+                {s.body}
+              </p>
             </div>
             <div>
               <p className="meta text-[12px]">You get</p>
