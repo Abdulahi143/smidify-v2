@@ -10,7 +10,6 @@ const links = [
 
 export async function Footer() {
   "use cache";
-
   return (
     <footer id="footer" className="site-footer">
       <div className="home-container footer-content">

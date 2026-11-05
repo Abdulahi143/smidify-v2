@@ -21,55 +21,44 @@ const FOCUSABLE = "a[href], button:not([disabled])";
 export function Nav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const sheetRef = useRef<HTMLDivElement>(null);
-  const toggleRef = useRef<HTMLButtonElement>(null);
-
-  const close = useCallback(() => {
-    setOpen(false);
-    toggleRef.current?.focus();
-  }, []);
-
+  const toggle = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLElement>(null);
   useEffect(() => {
     if (!open) return;
-    const sheet = sheetRef.current;
-    sheet?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
-
-    const onKey = (e: KeyboardEvent) => {
+    menu.current?.querySelector("a")?.focus();
+    const key = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        close();
-        return;
+        setOpen(false);
+        toggle.current?.focus();
       }
-      if (e.key !== "Tab" || !sheet) return;
-      // DOM order: menu toggle, then sheet contents
-      const ordered = [
-        ...(toggleRef.current ? [toggleRef.current] : []),
-        ...sheet.querySelectorAll<HTMLElement>(FOCUSABLE),
-      ];
-      const first = ordered[0];
-      const last = ordered[ordered.length - 1];
-      if (!first || !last) return;
-      if (e.shiftKey && document.activeElement === first) {
+      if (e.key === "Tab") {
+        const links = Array.from(
+          menu.current?.querySelectorAll<HTMLAnchorElement>("a") ?? [],
+        );
+        const elements: HTMLElement[] = [
+          ...(toggle.current ? [toggle.current] : []),
+          ...links,
+        ];
+        if (!elements.length) return;
         e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
+        const index = elements.indexOf(document.activeElement as HTMLElement);
+        const next =
+          (index + (e.shiftKey ? -1 : 1) + elements.length) % elements.length;
+        elements[next]?.focus();
       }
     };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [open, close]);
-
-  const isCurrent = (href: string) =>
-    pathname === href || pathname.startsWith(`${href}/`);
-
+    document.addEventListener("keydown", key);
+    return () => document.removeEventListener("keydown", key);
+  }, [open]);
   return (
     <header
       className={clsx("relative", pathname === "/" ? "cinema-nav" : "site-nav")}
     >
       <nav
-        aria-label="Main"
-        className="mx-auto flex max-w-[1280px] items-center justify-between px-5 py-7 md:px-[72px]"
+        ref={menu}
+        id="company-navigation"
+        aria-label="Main navigation"
+        className={open ? "open" : ""}
       >
         <Link href="/" aria-label="Smidify home" onClick={() => setOpen(false)}>
           <span className="brand-lockup">

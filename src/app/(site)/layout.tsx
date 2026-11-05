@@ -6,6 +6,7 @@ export default function SiteLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { copy } = await getCompanyContent();
   return (
     <div className="public-site">
       <a href="#main-content" className="skip-link">
