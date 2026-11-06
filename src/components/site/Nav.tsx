@@ -70,7 +70,10 @@ export function Nav({
     <header
       className={clsx("relative", pathname === "/" ? "cinema-nav" : "site-nav")}
     >
-      <nav aria-label="Main navigation">
+      <nav
+        aria-label="Main navigation"
+        className="mx-auto flex max-w-[1440px] items-center justify-between"
+      >
         <Link href="/" aria-label="Smidify home" onClick={() => setOpen(false)}>
           <span className="brand-lockup">
             <Image

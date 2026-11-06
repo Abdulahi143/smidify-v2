@@ -1,4 +1,7 @@
-import { FooterWithContent, NavWithContent } from "@/components/site/SiteContent";
+import {
+  FooterWithContent,
+  NavWithContent,
+} from "@/components/site/SiteContent";
 
 import { Footer } from "@/components/site/Footer";
 import { Nav } from "@/components/site/Nav";

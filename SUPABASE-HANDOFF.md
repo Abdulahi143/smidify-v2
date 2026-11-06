@@ -5,7 +5,7 @@ The public design, video, branding and team photos are local assets and do not n
 ## Connect
 
 1. Copy `.env.local.example` to `.env.local`. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` from the intended Supabase project. Set `NEXT_PUBLIC_SITE_URL` to the deployment domain. The current app uses the public anon key with row-level security; no service-role key is required by the current code.
-2. Link the intended project with the Supabase CLI and run `supabase db push`. Apply all three migrations in order: `0001_init.sql`, `0002_media_alt.sql`, `0003_quote_phone.sql`. These include tables, admin policies, the public `media` bucket and its upload policies. Do not reset a remote database.
+2. Link the intended project with the Supabase CLI and run `supabase db push`. Apply all four migrations in order: `0001_init.sql`, `0002_media_alt.sql`, `0003_quote_phone.sql`, `0004_company_content.sql`. These include tables, admin policies, the public `media` bucket and its upload policies, and draft/publish support for website content. Do not reset a remote database.
 3. Add services content. `supabase/seed.sql` contains example services, fictional projects/posts and pipeline records; review it before use. Do not present its fictional customers or results as real work. For production, enter the approved content instead.
 4. Create each admin in Supabase Auth, then insert their user ID into `public.admins` as described in README. Configure the Auth site URL and allowed redirect URLs for the actual deployment.
 5. Restart the local app after changing environment variables. Set the same variables on the hosting service and rebuild for deployment. The image hostname allowlist is derived from the Supabase URL.
@@ -41,3 +41,8 @@ These integration checks require the real project and remain for the connecting 
 - Production server verified with `next start -p 3001`: all 13 public index/detail pages render, Tailwind styles load, the hero video plays muted and the 390px layout has no horizontal overflow.
 - The existing Google font is self-hosted by Next.js at build time; the build environment needs network access to fetch it when it is not cached.
 - Live Auth, RLS, Storage and quote submission remain untested until Supabase is configured.
+
+
+## Main integration — 6 November 2026
+
+Merged the latest main into Abdiaziz, retaining the website editor, company-content schema/actions and fourth migration, StaliFit support/privacy routes, keystone favicon and the local third team-photo slot. The homepage header remains fully transparent; internal page headers retain their dark background. The editor and legacy CompanyHome components from main are retained; the current cinematic homepage still contains its own copy and team markup.

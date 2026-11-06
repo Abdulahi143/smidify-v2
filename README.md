@@ -49,7 +49,7 @@ Images upload from the browser to the public `media` bucket (`projects/{id}/…`
 
 ## Deploy (Vercel + Supabase)
 
-1. Create a Supabase project, then `supabase link --project-ref <ref>` and `supabase db push` (applies all three migrations, including media alt text and quote phone numbers).
+1. Create a Supabase project, then `supabase link --project-ref <ref>` and `supabase db push` (applies all four migrations, including media alt text, quote phone numbers and the website content editor).
 2. Optionally seed: run `supabase/seed.sql` in the SQL editor.
 3. Import the repo in Vercel and set the three environment variables above (Production and Preview).
 4. Add the first admin (see above) and set Supabase Auth → URL Configuration → Site URL to the Vercel domain.
