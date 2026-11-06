@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { defaultCompanyContent } from "@/lib/content/company";
 
 const links = [
   { href: "/work", label: "Work" },
@@ -8,7 +9,11 @@ const links = [
   { href: "/blog", label: "Blog" },
 ];
 
-export async function Footer() {
+export async function Footer({
+  copy = defaultCompanyContent.copy,
+}: {
+  copy?: Record<string, string>;
+}) {
   "use cache";
   return (
     <footer id="footer" className="site-footer">

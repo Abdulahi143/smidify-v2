@@ -1,13 +1,14 @@
 "use client";
 
-import Image from "next/image";
-
-import clsx from "clsx";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { List, X } from "@phosphor-icons/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import Image from "next/image";
+import Link from "next/link";
 import { buttonStyles } from "@/components/ui";
+import clsx from "clsx";
+import { defaultCompanyContent } from "@/lib/content/company";
+import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/work", label: "Work" },
@@ -18,48 +19,58 @@ const links = [
 
 const FOCUSABLE = "a[href], button:not([disabled])";
 
-export function Nav() {
+export function Nav({
+  copy = defaultCompanyContent.copy,
+}: {
+  copy?: Record<string, string>;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const toggle = useRef<HTMLButtonElement>(null);
-  const menu = useRef<HTMLElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  const isCurrent = (href: string) =>
+    pathname === href || pathname.startsWith(href + "/");
+
+  const close = useCallback(() => {
+    setOpen(false);
+    toggleRef.current?.focus();
+  }, []);
+
   useEffect(() => {
     if (!open) return;
-    menu.current?.querySelector("a")?.focus();
-    const key = (e: KeyboardEvent) => {
+    sheetRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+
+    const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setOpen(false);
-        toggle.current?.focus();
+        close();
+        return;
       }
-      if (e.key === "Tab") {
-        const links = Array.from(
-          menu.current?.querySelectorAll<HTMLAnchorElement>("a") ?? [],
-        );
-        const elements: HTMLElement[] = [
-          ...(toggle.current ? [toggle.current] : []),
-          ...links,
-        ];
-        if (!elements.length) return;
-        e.preventDefault();
-        const index = elements.indexOf(document.activeElement as HTMLElement);
-        const next =
-          (index + (e.shiftKey ? -1 : 1) + elements.length) % elements.length;
-        elements[next]?.focus();
-      }
+      if (e.key !== "Tab") return;
+
+      const elements: HTMLElement[] = [
+        ...(toggleRef.current ? [toggleRef.current] : []),
+        ...Array.from(
+          sheetRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [],
+        ),
+      ];
+      if (!elements.length) return;
+      e.preventDefault();
+      const index = elements.indexOf(document.activeElement as HTMLElement);
+      const next =
+        (index + (e.shiftKey ? -1 : 1) + elements.length) % elements.length;
+      elements[next]?.focus();
     };
-    document.addEventListener("keydown", key);
-    return () => document.removeEventListener("keydown", key);
-  }, [open]);
+
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, close]);
+
   return (
     <header
       className={clsx("relative", pathname === "/" ? "cinema-nav" : "site-nav")}
     >
-      <nav
-        ref={menu}
-        id="company-navigation"
-        aria-label="Main navigation"
-        className={open ? "open" : ""}
-      >
+      <nav aria-label="Main navigation">
         <Link href="/" aria-label="Smidify home" onClick={() => setOpen(false)}>
           <span className="brand-lockup">
             <Image
