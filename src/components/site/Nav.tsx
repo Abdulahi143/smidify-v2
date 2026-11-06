@@ -1,13 +1,14 @@
 "use client";
 
-import Image from "next/image";
-
-import clsx from "clsx";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { List, X } from "@phosphor-icons/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import Image from "next/image";
+import Link from "next/link";
 import { buttonStyles } from "@/components/ui";
+import clsx from "clsx";
+import { defaultCompanyContent } from "@/lib/content/company";
+import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/work", label: "Work" },
@@ -18,11 +19,18 @@ const links = [
 
 const FOCUSABLE = "a[href], button:not([disabled])";
 
-export function Nav() {
+export function Nav({
+  copy = defaultCompanyContent.copy,
+}: {
+  copy?: Record<string, string>;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const sheetRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  const isCurrent = (href: string) =>
+    pathname === href || pathname.startsWith(href + "/");
 
   const close = useCallback(() => {
     setOpen(false);
@@ -31,46 +39,38 @@ export function Nav() {
 
   useEffect(() => {
     if (!open) return;
-    const sheet = sheetRef.current;
-    sheet?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+    sheetRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         close();
         return;
       }
-      if (e.key !== "Tab" || !sheet) return;
-      // DOM order: menu toggle, then sheet contents
-      const ordered = [
+      if (e.key !== "Tab") return;
+
+      const elements: HTMLElement[] = [
         ...(toggleRef.current ? [toggleRef.current] : []),
-        ...sheet.querySelectorAll<HTMLElement>(FOCUSABLE),
+        ...Array.from(
+          sheetRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [],
+        ),
       ];
-      const first = ordered[0];
-      const last = ordered[ordered.length - 1];
-      if (!first || !last) return;
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
+      if (!elements.length) return;
+      e.preventDefault();
+      const index = elements.indexOf(document.activeElement as HTMLElement);
+      const next =
+        (index + (e.shiftKey ? -1 : 1) + elements.length) % elements.length;
+      elements[next]?.focus();
     };
+
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open, close]);
-
-  const isCurrent = (href: string) =>
-    pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <header
       className={clsx("relative", pathname === "/" ? "cinema-nav" : "site-nav")}
     >
-      <nav
-        aria-label="Main"
-        className="mx-auto flex max-w-[1280px] items-center justify-between px-5 py-7 md:px-[72px]"
-      >
+      <nav aria-label="Main navigation">
         <Link href="/" aria-label="Smidify home" onClick={() => setOpen(false)}>
           <span className="brand-lockup">
             <Image
