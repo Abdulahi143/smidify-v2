@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   description: "Notes on building, shipping and keeping things running.",
 };
 
-const wrap = "mx-auto max-w-[1280px] px-5 md:px-[72px]";
+const wrap = "inner-page journal-page home-container";
 type SP = Promise<{ category?: string; page?: string }>;
 
 function href(category?: string, page?: number) {
@@ -29,7 +29,8 @@ function href(category?: string, page?: number) {
 async function Posts({ searchParams }: { searchParams: SP }) {
   const sp = await searchParams;
   const categories = await getPostCategories();
-  const category = sp.category && categories.includes(sp.category) ? sp.category : undefined;
+  const category =
+    sp.category && categories.includes(sp.category) ? sp.category : undefined;
   const page = Math.max(1, Number.parseInt(sp.page ?? "1", 10) || 1);
   const [featured, { posts, total }] = await Promise.all([
     getFeaturedPost(),
@@ -56,15 +57,23 @@ async function Posts({ searchParams }: { searchParams: SP }) {
             <h2 className="mt-[15px] text-[30px] leading-9 md:text-[40px] md:leading-[46px]">
               {featured.title}
             </h2>
-            <p className="text-ink/78 mt-[15px] text-[17px] leading-7">{featured.excerpt}</p>
-            <Link href={`/blog/${featured.slug}`} className="mt-5 inline-block underline">
+            <p className="text-ink/78 mt-[15px] text-[17px] leading-7">
+              {featured.excerpt}
+            </p>
+            <Link
+              href={`/blog/${featured.slug}`}
+              className="mt-5 inline-block underline"
+            >
               Read the post →
             </Link>
           </div>
         </article>
       )}
 
-      <nav aria-label="Categories" className="mt-[72px] flex flex-wrap gap-x-[30px] gap-y-2.5 text-[17px]">
+      <nav
+        aria-label="Categories"
+        className="mt-[72px] flex flex-wrap gap-x-[30px] gap-y-2.5 text-[17px]"
+      >
         {[undefined, ...categories].map((c) => (
           <Link
             key={c ?? "all"}
@@ -77,25 +86,43 @@ async function Posts({ searchParams }: { searchParams: SP }) {
         ))}
       </nav>
 
-      <div className="mt-[30px] flex flex-col gap-[30px] md:gap-[40px]">
+      {posts.length === 0 && (
+        <p className="content-empty">No articles in this category yet.</p>
+      )}
+      <div className="journal-list mt-[30px] flex flex-col gap-[30px] md:gap-[40px]">
         {posts.map((p) => (
-          <article key={p.id} className="grid gap-2.5 md:grid-cols-[160px_1fr_140px] md:gap-0">
-            <p className="meta pt-2.5 text-[12px]">{formatDate(p.published_at)}</p>
+          <article
+            key={p.id}
+            className="grid gap-2.5 md:grid-cols-[160px_1fr_140px] md:gap-0"
+          >
+            <p className="meta pt-2.5 text-[12px]">
+              {formatDate(p.published_at)}
+            </p>
             <div>
               <h3 className="text-[26px] leading-8">
-                <Link href={`/blog/${p.slug}`} className="text-ink hover:text-cyan-700 no-underline">
+                <Link
+                  href={`/blog/${p.slug}`}
+                  className="text-ink no-underline hover:text-cyan-700"
+                >
                   {p.title}
                 </Link>
               </h3>
-              <p className="text-ink/78 mt-2.5 max-w-[56ch] text-[17px] leading-7">{p.excerpt}</p>
+              <p className="text-ink/78 mt-2.5 max-w-[56ch] text-[17px] leading-7">
+                {p.excerpt}
+              </p>
             </div>
-            <p className="meta pt-2.5 text-[12px] text-cyan-700 md:text-right">{p.category}</p>
+            <p className="meta pt-2.5 text-[12px] text-cyan-700 md:text-right">
+              {p.category}
+            </p>
           </article>
         ))}
       </div>
 
       {pages > 1 && (
-        <nav aria-label="Pagination" className="mt-[60px] flex items-center gap-[30px] text-[17px]">
+        <nav
+          aria-label="Pagination"
+          className="mt-[60px] flex items-center gap-[30px] text-[17px]"
+        >
           {page > 1 && <Link href={href(category, page - 1)}>← Newer</Link>}
           <span className="text-ink/70">
             Page {page} of {pages}
@@ -110,13 +137,22 @@ async function Posts({ searchParams }: { searchParams: SP }) {
 export default function BlogPage({ searchParams }: { searchParams: SP }) {
   return (
     <div className={`${wrap} pt-16 pb-[84px] md:pt-28 md:pb-[112px]`}>
+      <p className="eyebrow page-kicker">The journal / Thinking out loud</p>
       <h1 className="text-[40px] leading-[46px] tracking-[-0.02em] md:text-[72px] md:leading-[78px]">
-        Blog
+        Always building.
+        <br />
+        Always learning.
       </h1>
       <p className="text-ink/78 mt-[15px] max-w-[30ch] text-[19px] leading-[30px]">
         Notes on building, shipping and keeping things running.
       </p>
-      <Suspense>
+      <Suspense
+        fallback={
+          <p role="status" className="content-empty">
+            Loading articles…
+          </p>
+        }
+      >
         <Posts searchParams={searchParams} />
       </Suspense>
     </div>
