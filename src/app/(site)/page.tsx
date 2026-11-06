@@ -226,7 +226,7 @@ export default async function Home() {
                 src="/team/team-portrait-one.png"
                 alt="Abdiaziz, Co-founder, Technology & Solutions"
                 fill
-                sizes="(min-width: 768px) 23vw, 45vw"
+                sizes="(min-width: 1200px) 20vw, (min-width: 768px) 30vw, 45vw"
               />
             </div>
             <figcaption>
@@ -242,7 +242,7 @@ export default async function Home() {
                 src="/team/team-portrait-two.png"
                 alt="Shakur, Co-founder, Full-Stack Developer"
                 fill
-                sizes="(min-width: 768px) 23vw, 45vw"
+                sizes="(min-width: 1200px) 20vw, (min-width: 768px) 30vw, 45vw"
               />
             </div>
             <figcaption>
@@ -251,6 +251,16 @@ export default async function Home() {
                 <span>Co-founder,</span> <span>Full-Stack Developer</span>
               </p>
             </figcaption>
+          </figure>
+          <figure
+            className="team-portrait team-portrait-pending"
+            aria-label="Space for another team photo"
+          >
+            <div className="team-portrait-image">
+              <span className="team-photo-slot" aria-hidden="true">
+                +
+              </span>
+            </div>
           </figure>
         </div>
       </section>

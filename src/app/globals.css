@@ -2203,7 +2203,52 @@ body:has(.cinema-home) > footer {
 }
 
 /* Let the film show through while keeping light navigation readable. */
-.cinema-nav { background: rgba(7,12,14,.72); }
+.cinema-nav {
+  background: rgba(7, 12, 14, 0.72);
+}
 
 /* Homepage navigation sits directly over the film, without a tint. */
-.cinema-nav { background: transparent; }
+.cinema-nav {
+  background: transparent;
+}
+
+/* Third portrait slot follows the same angled panel treatment. */
+.team-portrait-pending .team-portrait-image:before {
+  background: #e3e2d9;
+}
+.team-photo-slot {
+  position: absolute;
+  inset: 14% 0 0;
+  display: grid;
+  place-items: center;
+  color: #637978;
+  font-size: 42px;
+  font-weight: 300;
+}
+@media (min-width: 768px) {
+  .team-portraits {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: none;
+  }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  .home-people {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .people-copy {
+    max-width: 650px;
+  }
+}
+@media (min-width: 1200px) {
+  .home-people {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 2fr);
+  }
+}
+@media (max-width: 767px) {
+  .team-portrait-pending {
+    grid-column: 1/-1;
+    width: calc((100% - 18px) / 2);
+    justify-self: center;
+  }
+}
