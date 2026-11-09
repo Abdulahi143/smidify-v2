@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { WorkCard } from "@/components/site";
@@ -11,13 +10,9 @@ export const metadata: Metadata = {
   description: "Things we've built and still look after.",
 };
 
-const wrap = "inner-page work-page home-container";
+const wrap = "mx-auto max-w-[1280px] px-5 md:px-[72px]";
 
-async function Projects({
-  searchParams,
-}: {
-  searchParams: Promise<{ kind?: string }>;
-}) {
+async function Projects({ searchParams }: { searchParams: Promise<{ kind?: string }> }) {
   const { kind: raw } = await searchParams;
   const kind = isKind(raw) ? raw : undefined;
   const projects = await getProjects(kind);
@@ -39,17 +34,7 @@ async function Projects({
       </div>
       <div className="mt-10 grid gap-x-12 gap-y-[72px] md:grid-cols-2">
         {projects.length === 0 ? (
-          <div className="content-empty">
-            <span className="eyebrow">The next chapter</span>
-            <h2>There’s more to come.</h2>
-            <p>
-              No projects in this category yet. Have something in mind? Let’s
-              make it happen.
-            </p>
-            <Link href="/#quote" className="light-text-link">
-              Start a conversation ↗
-            </Link>
-          </div>
+          <p className="text-ink/78 text-[17px]">No projects in this category yet.</p>
         ) : (
           projects.map((p) => <WorkCard key={p.id} project={p} />)
         )}
@@ -58,24 +43,13 @@ async function Projects({
   );
 }
 
-export default function WorkPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ kind?: string }>;
-}) {
+export default function WorkPage({ searchParams }: { searchParams: Promise<{ kind?: string }> }) {
   return (
     <div className={`${wrap} pt-16 pb-[84px] md:pt-28 md:pb-[112px]`}>
-      <p className="eyebrow page-kicker">Ideas made real / Selected work</p>
       <h1 className="text-[40px] leading-[46px] tracking-[-0.02em] md:text-[72px] md:leading-[78px]">
-        Work that moves things.
+        Work
       </h1>
-      <Suspense
-        fallback={
-          <p role="status" className="content-empty">
-            Loading projects…
-          </p>
-        }
-      >
+      <Suspense>
         <Projects searchParams={searchParams} />
       </Suspense>
     </div>

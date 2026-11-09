@@ -1,12 +1,13 @@
-import { mediaUrl } from "@/lib/media";
-import type { Metadata } from "next";
-import Link from "next/link";
 import { PostRow, QuoteForm } from "@/components/site";
-import Image from "next/image";
+
 import { HeroFilm } from "@/components/site/HeroFilm";
-import { getLatestPosts } from "@/lib/queries/posts";
+import Image from "next/image";
+import Link from "next/link";
+import type { Metadata } from "next";
 import { getFeaturedProjects } from "@/lib/queries/projects";
+import { getLatestPosts } from "@/lib/queries/posts";
 import { getServices } from "@/lib/queries/services";
+import { mediaUrl } from "@/lib/media";
 
 export const metadata: Metadata = {
   title: "Smidify — Websites, apps, networks. Easy to work with.",

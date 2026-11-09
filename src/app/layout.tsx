@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Source_Serif_4 } from "next/font/google";
 import "./globals.css";
-import { siteUrl } from "@/lib/media";
 
 const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
@@ -12,7 +11,6 @@ const sourceSerif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl()),
   title: "Smidify",
   description: "Websites, mobile apps, network solutions and AI integrations.",
 };
