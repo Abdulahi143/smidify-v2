@@ -6,13 +6,9 @@ import type { Project } from "@/lib/queries/projects";
 export function WorkCard({ project }: { project: Project }) {
   return (
     <article>
-      <Link
-        href={`/work/${project.slug}`}
-        className="text-ink hover:text-ink block no-underline"
-      >
+      <Link href={`/work/${project.slug}`} className="text-ink hover:text-ink block no-underline">
         <Cover
           path={project.cover_path}
-          alt={project.cover_alt || project.title}
           ratio="aspect-[16/10]"
           label="Project screenshot"
           sizes="(min-width: 768px) 50vw, 100vw"

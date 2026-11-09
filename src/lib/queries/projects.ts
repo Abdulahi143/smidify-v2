@@ -1,4 +1,3 @@
-import { sampleMode, sampleProjects } from "@/lib/content/samples";
 import { cacheLife, cacheTag } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { Database } from "@/lib/types/database";
@@ -9,9 +8,6 @@ export async function getFeaturedProjects(limit = 3): Promise<Project[]> {
   "use cache";
   cacheTag("projects");
   cacheLife({ stale: 300, revalidate: 300, expire: 3600 });
-  if (sampleMode) {
-    return sampleProjects.filter((p) => p.featured).slice(0, limit);
-  }
 
   const { data, error } = await createPublicClient()
     .from("projects")
@@ -26,20 +22,12 @@ export async function getFeaturedProjects(limit = 3): Promise<Project[]> {
 
 const cache = { stale: 300, revalidate: 300, expire: 3600 } as const;
 
-export async function getProjects(
-  kind?: Project["kinds"][number],
-): Promise<Project[]> {
+export async function getProjects(kind?: Project["kinds"][number]): Promise<Project[]> {
   "use cache";
   cacheTag("projects");
   cacheLife(cache);
-  if (sampleMode) {
-    return sampleProjects.filter((p) => !kind || p.kinds.includes(kind));
-  }
 
-  let q = createPublicClient()
-    .from("projects")
-    .select("*")
-    .eq("status", "published");
+  let q = createPublicClient().from("projects").select("*").eq("status", "published");
   if (kind) q = q.contains("kinds", [kind]);
   const { data, error } = await q.order("published_at", { ascending: false });
   if (error) throw error;
@@ -50,9 +38,6 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
   "use cache";
   cacheTag("projects");
   cacheLife(cache);
-  if (sampleMode) {
-    return sampleProjects.find((p) => p.slug === slug) ?? null;
-  }
 
   const { data, error } = await createPublicClient()
     .from("projects")
@@ -64,18 +49,10 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
   return data;
 }
 
-export async function getProjectSlugs(): Promise<
-  { slug: string; published_at: string | null }[]
-> {
+export async function getProjectSlugs(): Promise<{ slug: string; published_at: string | null }[]> {
   "use cache";
   cacheTag("projects");
   cacheLife(cache);
-  if (sampleMode) {
-    return sampleProjects.map(({ slug, published_at }) => ({
-      slug,
-      published_at,
-    }));
-  }
 
   const { data, error } = await createPublicClient()
     .from("projects")
@@ -87,18 +64,10 @@ export async function getProjectSlugs(): Promise<
 }
 
 /** The next project in publish order, wrapping to the newest. */
-export async function getNextProject(
-  slug: string,
-): Promise<Pick<Project, "slug" | "title"> | null> {
+export async function getNextProject(slug: string): Promise<Pick<Project, "slug" | "title"> | null> {
   "use cache";
   cacheTag("projects");
   cacheLife(cache);
-  if (sampleMode) {
-    const index = sampleProjects.findIndex((p) => p.slug === slug);
-    return index < 0
-      ? null
-      : (sampleProjects[(index + 1) % sampleProjects.length] ?? null);
-  }
 
   const all = await getProjectSlugs();
   if (all.length < 2) return null;

@@ -4,7 +4,7 @@ import { buttonStyles } from "@/components/ui";
 import { KIND_LABEL } from "@/lib/content/kinds";
 import type { Project } from "@/lib/queries/projects";
 
-const wrap = "inner-page article-page home-container";
+const wrap = "mx-auto max-w-[1280px] px-5 md:px-[72px]";
 
 export function ProjectArticle({
   p,
@@ -36,9 +36,7 @@ export function ProjectArticle({
       <h1 className="mt-[15px] max-w-[18ch] text-[40px] leading-[46px] tracking-[-0.02em] md:text-[72px] md:leading-[78px]">
         {p.title}
       </h1>
-      <p className="mt-[30px] max-w-[44ch] text-[19px] leading-[30px]">
-        {p.summary}
-      </p>
+      <p className="mt-[30px] max-w-[44ch] text-[19px] leading-[30px]">{p.summary}</p>
 
       <div className="mt-[60px]">
         <div className="rule-masthead" />
@@ -67,10 +65,7 @@ export function ProjectArticle({
       <div className="mt-[84px] flex flex-col gap-[72px]">
         {parts.map(([title, text]) =>
           text ? (
-            <section
-              key={title}
-              className="grid gap-[15px] md:grid-cols-[4fr_7fr] md:gap-12"
-            >
+            <section key={title} className="grid gap-[15px] md:grid-cols-[4fr_7fr] md:gap-12">
               <h2 className="text-[28px] leading-9 md:text-[30px]">{title}</h2>
               <p className="text-ink/78 text-[17px] leading-7">{text}</p>
             </section>
@@ -81,7 +76,7 @@ export function ProjectArticle({
       {p.quote && (
         <figure className="mt-[60px] md:grid md:grid-cols-[4fr_7fr] md:gap-12">
           <div className="md:col-start-2">
-            <blockquote className="indent-[-0.475em] text-[24px] leading-[34px] italic md:text-[30px] md:leading-[42px]">
+            <blockquote className="text-[24px] leading-[34px] italic indent-[-0.475em] md:text-[30px] md:leading-[42px]">
               “{p.quote}”
             </blockquote>
             {p.quote_author && (
@@ -112,7 +107,7 @@ export function ProjectArticle({
             <p className="meta text-[12px]">Next project</p>
             <Link
               href={`/work/${next.slug}`}
-              className="text-ink mt-[5px] inline-block text-[28px] no-underline hover:text-cyan-700 md:text-[34px]"
+              className="text-ink hover:text-cyan-700 mt-[5px] inline-block text-[28px] no-underline md:text-[34px]"
             >
               {next.title} →
             </Link>
@@ -120,13 +115,9 @@ export function ProjectArticle({
         ) : (
           <span />
         )}
-        <Link
-          href="/#quote"
-          className={buttonStyles("primary", "text-white hover:text-white")}
-        >
+        <Link href="/#quote" className={buttonStyles("primary", "text-white hover:text-white")}>
           Request a quote
         </Link>
       </div>
     </article>
-  );
-}
+  );}
