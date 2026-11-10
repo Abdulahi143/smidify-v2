@@ -1,16 +1,13 @@
-import { getAllPosts, getPostBySlug } from "@/lib/queries/posts";
-
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { PostArticle } from "@/components/site/PostArticle";
 import { mediaUrl } from "@/lib/media";
-import { notFound } from "next/navigation";
+import { getAllPosts, getPostBySlug } from "@/lib/queries/posts";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {
-  const posts = await getAllPosts();
-  if (posts.length === 0) return [{ slug: "__placeholder__" }];
-  return posts.map(({ slug }) => ({ slug }));
+  return (await getAllPosts()).map(({ slug }) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
