@@ -63,19 +63,12 @@ export function Nav() {
     pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-<<<<<<< HEAD
     <header
       className={clsx("relative", pathname === "/" ? "cinema-nav" : "site-nav")}
     >
       <nav
         aria-label="Main navigation"
         className="mx-auto flex max-w-[1440px] items-center justify-between"
-=======
-    <header className="relative">
-      <nav
-        aria-label="Main"
-        className="mx-auto flex max-w-[1280px] items-center justify-between px-5 py-7 md:px-[72px]"
->>>>>>> main
       >
         <Link href="/" aria-label="Smidify home" onClick={() => setOpen(false)}>
           <Wordmark size="md" className="lg:text-[34px]" />
