@@ -7,7 +7,9 @@ import { getAllPosts, getPostBySlug } from "@/lib/queries/posts";
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {
-  return (await getAllPosts()).map(({ slug }) => ({ slug }));
+  const params = (await getAllPosts()).map(({ slug }) => ({ slug }));
+  // Cache Components requires at least one result; the placeholder 404s.
+  return params.length ? params : [{ slug: "__placeholder__" }];
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
