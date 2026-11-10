@@ -1,13 +1,12 @@
-import { PostRow, QuoteForm } from "@/components/site";
-
-import { HeroFilm } from "@/components/site/HeroFilm";
-import Image from "next/image";
-import Link from "next/link";
-import type { Metadata } from "next";
-import { getFeaturedProjects } from "@/lib/queries/projects";
-import { getLatestPosts } from "@/lib/queries/posts";
-import { getServices } from "@/lib/queries/services";
 import { mediaUrl } from "@/lib/media";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { PostRow, QuoteForm } from "@/components/site";
+import Image from "next/image";
+import { HeroFilm } from "@/components/site/HeroFilm";
+import { getLatestPosts } from "@/lib/queries/posts";
+import { getFeaturedProjects } from "@/lib/queries/projects";
+import { getServices } from "@/lib/queries/services";
 
 export const metadata: Metadata = {
   title: "Smidify — Websites, apps, networks. Easy to work with.",
@@ -227,7 +226,7 @@ export default async function Home() {
                 src="/team/team-portrait-one.png"
                 alt="Abdiaziz, Co-founder, Technology & Solutions"
                 fill
-                sizes="(min-width: 1200px) 20vw, (min-width: 768px) 30vw, 45vw"
+                sizes="(min-width: 768px) 23vw, 45vw"
               />
             </div>
             <figcaption>
@@ -243,7 +242,7 @@ export default async function Home() {
                 src="/team/team-portrait-two.png"
                 alt="Shakur, Co-founder, Full-Stack Developer"
                 fill
-                sizes="(min-width: 1200px) 20vw, (min-width: 768px) 30vw, 45vw"
+                sizes="(min-width: 768px) 23vw, 45vw"
               />
             </div>
             <figcaption>
@@ -252,16 +251,6 @@ export default async function Home() {
                 <span>Co-founder,</span> <span>Full-Stack Developer</span>
               </p>
             </figcaption>
-          </figure>
-          <figure
-            className="team-portrait team-portrait-pending"
-            aria-label="Space for another team photo"
-          >
-            <div className="team-portrait-image">
-              <span className="team-photo-slot" aria-hidden="true">
-                +
-              </span>
-            </div>
           </figure>
         </div>
       </section>

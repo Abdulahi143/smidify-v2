@@ -18,12 +18,12 @@ pnpm dev
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL. Also drives `images.remotePatterns` in `next.config.ts`, so Storage images work with `next/image`. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon key. Public reads and admin session calls; RLS enforces access. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server-only. Never import it in client code. |
 | `NEXT_PUBLIC_SITE_URL` | Canonical URL (sitemap, RSS, Open Graph). |
 
 ## Scripts
 
 - `pnpm dev` / `pnpm build` / `pnpm start`
+- Production builds use the supported Webpack builder (`next build --webpack`) with Tailwind’s PostCSS plugin.
 - `pnpm typecheck`, `pnpm lint`
 - `pnpm db:types` regenerates `src/lib/types/database.ts` from the local database
 
@@ -49,8 +49,23 @@ Images upload from the browser to the public `media` bucket (`projects/{id}/…`
 
 ## Deploy (Vercel + Supabase)
 
-1. Create a Supabase project, then `supabase link --project-ref <ref>` and `supabase db push` (applies both migrations; run `supabase db push` before first deploy, since the code expects `cover_alt` / `gallery_alts`).
+1. Create a Supabase project, then `supabase link --project-ref <ref>` and `supabase db push` (applies all three migrations, including media alt text and quote phone numbers).
 2. Optionally seed: run `supabase/seed.sql` in the SQL editor.
-3. Import the repo in Vercel and set the four environment variables above (Production and Preview).
+3. Import the repo in Vercel and set the three environment variables above (Production and Preview).
 4. Add the first admin (see above) and set Supabase Auth → URL Configuration → Site URL to the Vercel domain.
 5. The Storage host is allowed automatically because `next.config.ts` builds `images.remotePatterns` from `NEXT_PUBLIC_SUPABASE_URL`.
+
+## Design preview content
+
+When either public Supabase environment variable is missing, the public project and
+blog queries use fictional content from `src/lib/content/samples.ts`, with local
+illustrations in `public/samples/`. The public design has no preview banner; these are demonstration records, not real client work.
+Project details, next-project navigation, blog articles, categories and work filters
+all use the same sample records. Once both public Supabase variables are configured,
+these queries read the database instead; database errors are not replaced with sample
+content. No sample records are written to Supabase.
+
+
+## Supabase handoff
+
+See [SUPABASE-HANDOFF.md](SUPABASE-HANDOFF.md) for the connection steps and acceptance checks. The public design works without Supabase. Admin access, storage uploads and quote submissions need a configured project.

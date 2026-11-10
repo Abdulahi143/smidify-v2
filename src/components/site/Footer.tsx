@@ -1,43 +1,78 @@
+import Image from "next/image";
 import Link from "next/link";
-import { Wordmark } from "./Wordmark";
+import { defaultCompanyContent } from "@/lib/content/company";
 
 const links = [
   { href: "/work", label: "Work" },
   { href: "/services", label: "Services" },
+  { href: "/process", label: "Process" },
   { href: "/blog", label: "Blog" },
 ];
 
-export async function Footer() {
+export async function Footer({
+  copy = defaultCompanyContent.copy,
+}: {
+  copy?: Record<string, string>;
+}) {
   "use cache";
-
   return (
-    <footer className="text-ink/70 mx-auto flex max-w-[1280px] flex-col gap-5 px-5 py-10 text-[13px] md:flex-row md:items-center md:justify-between md:px-[72px]">
-      <p className="flex items-baseline gap-1">
-        <span>© {new Date().getFullYear()}</span>
-        <Wordmark size="sm" as="span" />
-      </p>
-      <nav aria-label="Footer">
-        <ul className="flex flex-wrap gap-x-[30px] gap-y-2">
-          {links.map(({ href, label }) => (
-            <li key={href}>
-              <Link
-                href={href}
-                className="text-ink/70 no-underline hover:text-cyan-700"
-              >
-                {label}
-              </Link>
-            </li>
-          ))}
-          <li>
-            <a
-              href="mailto:hello@smidify.com"
-              className="text-ink/70 no-underline hover:text-cyan-700"
-            >
-              hello@smidify.com
+    <footer id="footer" className="site-footer">
+      <div className="home-container footer-content">
+        <div className="footer-main">
+          <div className="footer-brand">
+            <Link href="/" aria-label="Smidify home" className="brand-lockup">
+              <Image
+                src="/brand/smidify-keystone.svg"
+                alt=""
+                width={38}
+                height={38}
+                className="brand-keystone"
+              />
+              <Image
+                src="/brand/smidify-wordmark.svg"
+                alt="Smidify"
+                width={145}
+                height={39}
+                className="site-brand-logo"
+              />
+              <sup className="brand-trademark" aria-label="trademark">
+                ™
+              </sup>
+            </Link>
+            <p>
+              Websites, apps, networks.
+              <br />
+              Easy to work with.
+            </p>
+          </div>
+          <nav aria-label="Footer">
+            <p className="footer-label">Explore</p>
+            <ul>
+              {links.map(({ href, label }) => (
+                <li key={href}>
+                  <Link href={href}>
+                    {label}
+                    <span aria-hidden="true">↗</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <div className="footer-contact">
+            <p className="footer-label">Start a conversation</p>
+            <a href="mailto:hello@smidify.com">
+              hello@smidify.com <span aria-hidden="true">↗</span>
             </a>
-          </li>
-        </ul>
-      </nav>
+            <Link href="/#quote" className="footer-quote">
+              Tell us about your project
+            </Link>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <p>© {new Date().getFullYear()} Smidify. All rights reserved.</p>
+          <p>Designed. Built. Connected.</p>
+        </div>
+      </div>
     </footer>
   );
 }

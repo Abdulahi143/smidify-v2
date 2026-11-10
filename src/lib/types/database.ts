@@ -23,7 +23,13 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "admins": {
+            "company_content": {
+ Row: {id: string; content: Json; revision: number; updated_at: string}
+ Insert: {id: string; content: Json; revision?: number; updated_at?: string}
+ Update: {id?: string; content?: Json; revision?: number; updated_at?: string}
+ Relationships: []
+ ComputedFields: never
+ },"admins": {
                   Row: {
                     "user_id": string
                   }
@@ -125,7 +131,9 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "is_admin":
+            "save_company_draft": {Args: {input_content: Json; expected_revision: number}; Returns: {revision: number; updated_at: string}[]},
+ "publish_company_content": {Args: {expected_revision: number}; Returns: {revision: number; updated_at: string}[]},
+ "is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            }
           }
