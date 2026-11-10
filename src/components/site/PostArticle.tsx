@@ -3,7 +3,7 @@ import { Cover, Markdown } from "@/components/site";
 import { formatDate } from "@/lib/media";
 import type { Post } from "@/lib/queries/posts";
 
-const wrap = "mx-auto max-w-[1280px] px-5 md:px-[72px]";
+const wrap = "inner-page article-page home-container";
 
 export function PostArticle({ p }: { p: Post }) {
   return (
@@ -17,7 +17,9 @@ export function PostArticle({ p }: { p: Post }) {
       <h1 className="mt-[15px] max-w-[20ch] text-[40px] leading-[46px] tracking-[-0.02em] md:text-[64px] md:leading-[70px]">
         {p.title}
       </h1>
-      <p className="mt-[30px] max-w-[44ch] text-[19px] leading-[30px]">{p.excerpt}</p>
+      <p className="mt-[30px] max-w-[44ch] text-[19px] leading-[30px]">
+        {p.excerpt}
+      </p>
       <div className="mt-10">
         <Cover
           path={p.cover_path}
@@ -32,4 +34,5 @@ export function PostArticle({ p }: { p: Post }) {
         <Markdown>{p.body_md}</Markdown>
       </div>
     </article>
-  );}
+  );
+}

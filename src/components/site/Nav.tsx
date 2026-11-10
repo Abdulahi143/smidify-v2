@@ -1,12 +1,14 @@
 "use client";
 
-import clsx from "clsx";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { List, X } from "@phosphor-icons/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import Image from "next/image";
+import Link from "next/link";
 import { buttonStyles } from "@/components/ui";
-import { Wordmark } from "./Wordmark";
+import clsx from "clsx";
+import { defaultCompanyContent } from "@/lib/content/company";
+import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/work", label: "Work" },
@@ -17,11 +19,18 @@ const links = [
 
 const FOCUSABLE = "a[href], button:not([disabled])";
 
-export function Nav() {
+export function Nav({
+  copy = defaultCompanyContent.copy,
+}: {
+  copy?: Record<string, string>;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const sheetRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  const isCurrent = (href: string) =>
+    pathname === href || pathname.startsWith(href + "/");
 
   const close = useCallback(() => {
     setOpen(false);
@@ -30,37 +39,32 @@ export function Nav() {
 
   useEffect(() => {
     if (!open) return;
-    const sheet = sheetRef.current;
-    sheet?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+    sheetRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         close();
         return;
       }
-      if (e.key !== "Tab" || !sheet) return;
-      // DOM order: menu toggle, then sheet contents
-      const ordered = [
+      if (e.key !== "Tab") return;
+
+      const elements: HTMLElement[] = [
         ...(toggleRef.current ? [toggleRef.current] : []),
-        ...sheet.querySelectorAll<HTMLElement>(FOCUSABLE),
+        ...Array.from(
+          sheetRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [],
+        ),
       ];
-      const first = ordered[0];
-      const last = ordered[ordered.length - 1];
-      if (!first || !last) return;
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
+      if (!elements.length) return;
+      e.preventDefault();
+      const index = elements.indexOf(document.activeElement as HTMLElement);
+      const next =
+        (index + (e.shiftKey ? -1 : 1) + elements.length) % elements.length;
+      elements[next]?.focus();
     };
+
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open, close]);
-
-  const isCurrent = (href: string) =>
-    pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <header
@@ -71,10 +75,29 @@ export function Nav() {
         className="mx-auto flex max-w-[1440px] items-center justify-between"
       >
         <Link href="/" aria-label="Smidify home" onClick={() => setOpen(false)}>
-          <Wordmark size="md" className="lg:text-[34px]" />
+          <span className="brand-lockup">
+            <Image
+              src="/brand/smidify-keystone.svg"
+              alt=""
+              width={44}
+              height={44}
+              className="brand-keystone"
+            />
+            <Image
+              src="/brand/smidify-wordmark.svg"
+              alt="Smidify"
+              width={180}
+              height={48}
+              className="site-brand-logo"
+              priority
+            />
+            <sup className="brand-trademark" aria-label="trademark">
+              ™
+            </sup>
+          </span>
         </Link>
 
-        <div className="hidden items-center gap-[30px] md:flex">
+        <div className="hidden items-center gap-[30px] lg:flex">
           <ul className="flex items-center gap-[30px]">
             {links.map(({ href, label }) => (
               <li key={href}>
@@ -105,7 +128,7 @@ export function Nav() {
         <button
           ref={toggleRef}
           type="button"
-          className="-mr-2 cursor-pointer p-2 md:hidden"
+          className="-mr-2 cursor-pointer p-2 lg:hidden"
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           aria-controls="mobile-menu"
@@ -123,7 +146,7 @@ export function Nav() {
         <div
           id="mobile-menu"
           ref={sheetRef}
-          className="bg-paper absolute inset-x-0 top-full z-50 px-5 pt-2 pb-8 md:hidden"
+          className="bg-paper absolute inset-x-0 top-full z-50 px-5 pt-2 pb-8 lg:hidden"
         >
           <ul className="flex flex-col gap-5">
             {links.map(({ href, label }) => (

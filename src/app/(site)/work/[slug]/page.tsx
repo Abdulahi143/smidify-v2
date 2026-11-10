@@ -1,13 +1,16 @@
+import { getNextProject, getProjectBySlug, getProjectSlugs } from "@/lib/queries/projects";
+
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { ProjectArticle } from "@/components/site/ProjectArticle";
 import { mediaUrl } from "@/lib/media";
-import { getNextProject, getProjectBySlug, getProjectSlugs } from "@/lib/queries/projects";
+import { notFound } from "next/navigation";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {
-  return (await getProjectSlugs()).map(({ slug }) => ({ slug }));
+  const projects = await getProjectSlugs();
+  if (projects.length === 0) return [{ slug: "__placeholder__" }];
+  return projects.map(({ slug }) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
