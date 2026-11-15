@@ -19,12 +19,21 @@ const slug = z
   .trim()
   .min(1, "Add a URL slug.")
   .max(80)
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers and hyphens.");
+  .regex(
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+    "Use lowercase letters, numbers and hyphens.",
+  );
 const status = z.enum(CONTENT_STATUSES);
 const mediaPath = z.string().trim().max(300).nullable();
 
 const publishChecks = (
-  v: { status: string; summary?: string; excerpt?: string; cover_path: string | null; cover_alt: string },
+  v: {
+    status: string;
+    summary?: string;
+    excerpt?: string;
+    cover_path: string | null;
+    cover_alt: string;
+  },
   ctx: z.RefinementCtx,
 ) => {
   if (v.status !== "published") return;
@@ -37,13 +46,24 @@ const publishChecks = (
     });
   }
   if (!v.cover_path) {
-    ctx.addIssue({ code: "custom", path: ["cover_path"], message: "Upload a cover image before publishing." });
+    ctx.addIssue({
+      code: "custom",
+      path: ["cover_path"],
+      message: "Upload a cover image before publishing.",
+    });
   }
 };
 
-const coverAlt = (v: { cover_path: string | null; cover_alt: string }, ctx: z.RefinementCtx) => {
+const coverAlt = (
+  v: { cover_path: string | null; cover_alt: string },
+  ctx: z.RefinementCtx,
+) => {
   if (v.cover_path && !v.cover_alt) {
-    ctx.addIssue({ code: "custom", path: ["cover_alt"], message: "Describe the image for screen readers." });
+    ctx.addIssue({
+      code: "custom",
+      path: ["cover_alt"],
+      message: "Describe the image for screen readers.",
+    });
   }
 };
 
@@ -73,7 +93,11 @@ export const projectSchema = z
     coverAlt(v, ctx);
     v.gallery_paths.forEach((_, i) => {
       if (!v.gallery_alts[i]) {
-        ctx.addIssue({ code: "custom", path: ["gallery_alts", i], message: "Describe each gallery image." });
+        ctx.addIssue({
+          code: "custom",
+          path: ["gallery_alts", i],
+          message: "Describe each gallery image.",
+        });
       }
     });
     publishChecks(v, ctx);
@@ -98,7 +122,9 @@ export const postSchema = z
   });
 
 export const serviceSchema = z.object({
-  id: z.uuid(),
+  id: z.uuid().nullable(),
+  num: text(8).min(1, "Add a display number."),
+  sort: z.number().int().min(0).max(1000),
   title: text(80).min(1, "Add a title."),
   body: text(600).min(1, "Add a description."),
   items: z.array(text(80).min(1)).max(8),

@@ -1,14 +1,20 @@
+import { connection } from "next/server";
 import Link from "next/link";
-import { buttonStyles, SegmentedLinks, Tag } from "@/components/ui";
+import { SegmentedLinks } from "@/components/ui";
+import { ArrowRight } from "@phosphor-icons/react/dist/ssr/ArrowRight";
+import { Article } from "@phosphor-icons/react/dist/ssr/Article";
+import { FolderSimple } from "@phosphor-icons/react/dist/ssr/FolderSimple";
+import { MagnifyingGlass } from "@phosphor-icons/react/dist/ssr/MagnifyingGlass";
+import { Plus } from "@phosphor-icons/react/dist/ssr/Plus";
 import { updatedLabel } from "@/lib/format";
 import type { ContentStatus } from "@/lib/queries/admin";
 import type { ListRow } from "@/lib/queries/admin-content";
 import { DeleteButton } from "./DeleteButton";
 
-const STATUS: Record<ContentStatus, { label: string; tone: "neutral" | "magenta" | "cyan" }> = {
-  draft: { label: "Draft", tone: "neutral" },
-  in_review: { label: "In review", tone: "magenta" },
-  published: { label: "Published", tone: "cyan" },
+const STATUS: Record<ContentStatus, string> = {
+  draft: "Draft",
+  in_review: "In review",
+  published: "Published",
 };
 
 const FILTERS = [
@@ -18,7 +24,7 @@ const FILTERS = [
   { value: "published", label: "Published" },
 ] as const;
 
-export function ContentList({
+export async function ContentList({
   kind,
   rows,
   q,
@@ -41,66 +47,143 @@ export function ContentList({
     return { ...f, href: qs ? `${base}?${qs}` : base };
   });
 
+  const Icon = kind === "projects" ? FolderSimple : Article;
+  await connection();
   return (
-    <section aria-labelledby="list-h" className="flex flex-col gap-[30px]">
-      <div className="flex flex-wrap items-baseline justify-between gap-[15px]">
-        <h1 id="list-h" className="text-[44px] leading-[52px]">
-          {kind === "projects" ? "Projects" : "Blog posts"}
-        </h1>
-        <Link href={`${base}/new`} className={buttonStyles("primary", "text-white no-underline hover:text-white")}>
+    <section aria-labelledby="list-h" className="studio-content-page">
+      <header className="studio-page-header">
+        <div>
+          <p className="studio-eyebrow">Manage content</p>
+          <h1 id="list-h">{kind === "projects" ? "Projects" : "Blog posts"}</h1>
+          <p className="studio-description">
+            {kind === "projects"
+              ? "The work you build. The stories behind it."
+              : "Ideas and updates from the studio."}
+          </p>
+        </div>
+        <Link
+          href={`${base}/new`}
+          className="studio-button studio-button-primary"
+        >
+          <Plus size={16} aria-hidden="true" />
           New {noun}
         </Link>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-[20px]">
-        <form action={base} role="search" className="w-full max-w-[320px]">
-          <label htmlFor="list-q" className="sr-only">
-            Search {kind}
-          </label>
-          <input
-            id="list-q"
-            name="q"
-            type="search"
-            defaultValue={q}
-            placeholder={`Search ${kind}…`}
-            className="bg-neutral-100 text-ink ring-neutral-300 w-full rounded-md px-3 py-2 text-[15px] ring-1 ring-inset"
+      </header>
+      <div className="studio-panel">
+        <div className="studio-list-filters">
+          <SegmentedLinks
+            options={options}
+            value={status ?? ""}
+            label="Status"
+            className="studio-content-tabs"
           />
-          {status ? <input type="hidden" name="status" value={status} /> : null}
-        </form>
-        <SegmentedLinks options={options} value={status ?? ""} label="Status" />
+          <form action={base} role="search" className="studio-search">
+            <MagnifyingGlass size={17} aria-hidden="true" />
+            <label htmlFor="list-q" className="sr-only">
+              Search {kind}
+            </label>
+            <input
+              id="list-q"
+              name="q"
+              type="search"
+              defaultValue={q}
+              maxLength={100}
+              placeholder={`Search ${kind}…`}
+            />
+            {status ? (
+              <input type="hidden" name="status" value={status} />
+            ) : null}
+          </form>
+        </div>
+        {rows.length > 0 ? (
+          <div
+            className="studio-table-scroll"
+            tabIndex={0}
+            role="region"
+            aria-label={`${kind} table`}
+          >
+            <table className="studio-content-table">
+              <caption className="sr-only">{kind}</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Title</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Updated</th>
+                  <th scope="col">
+                    <span className="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id}>
+                    <td>
+                      <div className="studio-content-title">
+                        <span className="studio-content-icon">
+                          <Icon size={18} aria-hidden="true" />
+                        </span>
+                        <div>
+                          <Link href={`${base}/${row.id}`}>{row.title}</Link>
+                          <span>
+                            /{kind === "projects" ? "work" : "blog"}/{row.slug}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        className={`studio-status studio-status-${row.status}`}
+                      >
+                        <span aria-hidden="true" />
+                        {STATUS[row.status]}
+                      </span>
+                    </td>
+                    <td className="studio-updated">
+                      {updatedLabel(row.updated_at) || "—"}
+                    </td>
+                    <td>
+                      <DeleteButton
+                        title={row.title}
+                        action={remove.bind(null, row.id)}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="studio-empty">
+            <span className="studio-empty-icon">
+              <Icon size={26} aria-hidden="true" />
+            </span>
+            <h3>
+              {q || status
+                ? "No matching content"
+                : `Your first ${noun} starts here`}
+            </h3>
+            <p>
+              {q || status
+                ? "Try another search or status filter."
+                : "Save a draft, add your content, and publish when it is ready."}
+            </p>
+            <Link
+              href={q || status ? base : `${base}/new`}
+              className="studio-text-link"
+            >
+              {q || status ? "Clear filters" : `Create a ${noun}`}
+              <ArrowRight size={15} aria-hidden="true" />
+            </Link>
+          </div>
+        )}
+        <div className="studio-panel-footer">
+          <span className="studio-list-count">
+            {rows.length === 200
+              ? "Showing the first 200 results. Search to narrow the list."
+              : `${rows.length} ${rows.length === 1 ? noun : kind === "projects" ? "projects" : "posts"}`}
+          </span>
+        </div>
       </div>
-
-      <table className="w-full text-left text-[17px]">
-        <caption className="sr-only">{kind}</caption>
-        <thead>
-          <tr className="border-b border-neutral-300">
-            <th scope="col" className="meta py-[10px] pr-[10px] font-normal">Title</th>
-            <th scope="col" className="meta px-[10px] py-[10px] font-normal">Status</th>
-            <th scope="col" className="meta px-[10px] py-[10px] font-normal">Updated</th>
-            <th scope="col" className="py-[10px] pl-[10px]"><span className="sr-only">Actions</span></th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => {
-            const s = STATUS[r.status];
-            return (
-              <tr key={r.id} className="border-b border-neutral-200">
-                <td className="py-[15px] pr-[10px]">
-                  <Link href={`${base}/${r.id}`} className="text-ink no-underline hover:text-cyan-700">
-                    {r.title}
-                  </Link>
-                </td>
-                <td className="px-[10px] py-[15px]"><Tag tone={s.tone}>{s.label}</Tag></td>
-                <td className="px-[10px] py-[15px] whitespace-nowrap">{updatedLabel(r.updated_at)}</td>
-                <td className="py-[15px] pl-[10px] text-right">
-                  <DeleteButton title={r.title} action={remove.bind(null, r.id)} />
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      {rows.length === 0 ? <p className="text-ink/70">Nothing matches.</p> : null}
     </section>
   );
 }

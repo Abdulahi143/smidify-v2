@@ -1,53 +1,66 @@
-import { buttonStyles, Button } from "@/components/ui";
+import { connection } from "next/server";
+import Link from "next/link";
+import { ArrowRight } from "@phosphor-icons/react/dist/ssr/ArrowRight";
+import { Tray } from "@phosphor-icons/react/dist/ssr/Tray";
+import { QuoteActions } from "./QuoteActions";
 import { relativeTime } from "@/lib/format";
-import { moveQuoteToIdea } from "@/lib/actions";
 import type { QuoteRequest } from "@/lib/queries/quotes";
 
-export function QuoteList({ quotes }: { quotes: QuoteRequest[] }) {
+export async function QuoteList({ quotes }: { quotes: QuoteRequest[] }) {
+  await connection();
   return (
-    <section aria-labelledby="quotes-h">
-      <h2 id="quotes-h" className="text-[36px] leading-[44px]">
-        Quote requests
-      </h2>
+    <section
+      aria-labelledby="quotes-h"
+      className="studio-panel studio-quotes-panel"
+    >
+      <div className="studio-panel-heading">
+        <div>
+          <h2 id="quotes-h">Quote requests</h2>
+          <p>Your next project could start here.</p>
+        </div>
+        <Tray size={20} aria-hidden="true" />
+      </div>
       {quotes.length === 0 ? (
-        <p className="text-ink/70 mt-[20px]">No new requests.</p>
+        <div className="studio-empty">
+          <span className="studio-empty-icon">
+            <Tray size={25} aria-hidden="true" />
+          </span>
+          <h3>You&apos;re all caught up</h3>
+          <p>New requests from your website will appear here.</p>
+        </div>
       ) : (
-        <ul className="mt-[20px] flex flex-col gap-[30px]">
+        <ul className="studio-quote-list">
           {quotes.map((q) => {
             const title = q.company || q.name || q.email;
             return (
               <li key={q.id}>
-                <div className="flex items-baseline justify-between gap-[10px]">
-                  <span className="meta text-cyan-700">{q.kind}</span>
-                  <span className="meta">{relativeTime(q.created_at)}</span>
+                <div className="studio-quote-meta">
+                  <span>{q.kind || "New enquiry"}</span>
+                  <time dateTime={q.created_at ?? undefined}>
+                    {relativeTime(q.created_at)}
+                  </time>
                 </div>
-                <h3 className="mt-[5px] text-[19px] leading-[26px]">{title}</h3>
+                <h3>{title}</h3>
                 {q.phone ? (
-                  <p className="mt-[5px] text-[15px]">
-                    <a href={`tel:${q.phone}`}>{q.phone}</a>
-                  </p>
+                  <a href={`tel:${q.phone}`} className="studio-quote-phone">
+                    {q.phone}
+                  </a>
                 ) : null}
                 {q.message ? (
-                  <p className="text-ink/75 mt-[5px] text-[17px] leading-7">{q.message}</p>
+                  <p className="studio-quote-message">{q.message}</p>
                 ) : null}
-                <div className="mt-[15px] flex items-center gap-[20px]">
-                  <a
-                    href={`mailto:${q.email}?subject=${encodeURIComponent("Your Smidify quote request")}`}
-                    className={buttonStyles("secondary", "no-underline hover:text-cyan-800")}
-                  >
-                    Reply
-                  </a>
-                  <form action={moveQuoteToIdea.bind(null, q.id)}>
-                    <Button type="submit" variant="ghost">
-                      Move to Idea
-                    </Button>
-                  </form>
-                </div>
+                <QuoteActions id={q.id} email={q.email} />
               </li>
             );
           })}
         </ul>
       )}
+      <div className="studio-panel-footer">
+        <Link href="/admin/quotes" className="studio-text-link">
+          View all requests
+          <ArrowRight size={14} aria-hidden="true" />
+        </Link>
+      </div>
     </section>
   );
 }

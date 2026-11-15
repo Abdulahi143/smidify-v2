@@ -1,4 +1,6 @@
 import { cache } from "react";
+import { isLocalStudioPreview } from "@/lib/studio-preview";
+import { studioCounts, studioContent } from "@/lib/content/studio-samples";
 import { requireAdmin } from "@/lib/auth";
 import type { Database } from "@/lib/types/database";
 
@@ -25,23 +27,41 @@ export type AdminCounts = {
 };
 
 export const getAdminCounts = cache(async (): Promise<AdminCounts> => {
+  if (await isLocalStudioPreview()) return studioCounts;
   const { supabase } = await requireAdmin();
   const head = { count: "exact", head: true } as const;
-  const [pipeline, projects, pubProjects, posts, pubPosts, draftProjects, draftPosts, services, quotes] =
-    await Promise.all([
-      supabase.from("pipeline_items").select("*", head),
-      supabase.from("projects").select("*", head),
-      supabase.from("projects").select("*", head).eq("status", "published"),
-      supabase.from("posts").select("*", head),
-      supabase.from("posts").select("*", head).eq("status", "published"),
-      supabase.from("projects").select("*", head).neq("status", "published"),
-      supabase.from("posts").select("*", head).neq("status", "published"),
-      supabase.from("services").select("*", head),
-      supabase.from("quote_requests").select("*", head).eq("handled", false),
-    ]);
-  const failed = [pipeline, projects, pubProjects, posts, pubPosts, draftProjects, draftPosts, services, quotes].find(
-    (r) => r.error,
-  );
+  const [
+    pipeline,
+    projects,
+    pubProjects,
+    posts,
+    pubPosts,
+    draftProjects,
+    draftPosts,
+    services,
+    quotes,
+  ] = await Promise.all([
+    supabase.from("pipeline_items").select("*", head),
+    supabase.from("projects").select("*", head),
+    supabase.from("projects").select("*", head).eq("status", "published"),
+    supabase.from("posts").select("*", head),
+    supabase.from("posts").select("*", head).eq("status", "published"),
+    supabase.from("projects").select("*", head).neq("status", "published"),
+    supabase.from("posts").select("*", head).neq("status", "published"),
+    supabase.from("services").select("*", head),
+    supabase.from("quote_requests").select("*", head).eq("handled", false),
+  ]);
+  const failed = [
+    pipeline,
+    projects,
+    pubProjects,
+    posts,
+    pubPosts,
+    draftProjects,
+    draftPosts,
+    services,
+    quotes,
+  ].find((r) => r.error);
   if (failed?.error) throw failed.error;
 
   return {
@@ -61,14 +81,19 @@ export async function getSiteContent(
   q?: string,
   limit = 8,
 ): Promise<ContentRow[]> {
+  if (await isLocalStudioPreview()) return studioContent(type, q, limit);
   const { supabase } = await requireAdmin();
   const pattern = q ? `%${q.replace(/[%_\\]/g, "\\$&")}%` : null;
 
   const projects = async (): Promise<ContentRow[]> => {
     if (type === "posts") return [];
-    let query = supabase.from("projects").select("id, title, status, updated_at");
+    let query = supabase
+      .from("projects")
+      .select("id, title, status, updated_at");
     if (pattern) query = query.ilike("title", pattern);
-    const { data, error } = await query.order("updated_at", { ascending: false }).limit(limit);
+    const { data, error } = await query
+      .order("updated_at", { ascending: false })
+      .limit(limit);
     if (error) throw error;
     return data.map((r) => ({ ...r, type: "project" as const }));
   };
@@ -76,7 +101,9 @@ export async function getSiteContent(
     if (type === "projects") return [];
     let query = supabase.from("posts").select("id, title, status, updated_at");
     if (pattern) query = query.ilike("title", pattern);
-    const { data, error } = await query.order("updated_at", { ascending: false }).limit(limit);
+    const { data, error } = await query
+      .order("updated_at", { ascending: false })
+      .limit(limit);
     if (error) throw error;
     return data.map((r) => ({ ...r, type: "post" as const }));
   };

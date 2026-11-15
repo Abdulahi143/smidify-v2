@@ -3,21 +3,23 @@ import { Suspense } from "react";
 import { Footer } from "@/components/site/Footer";
 import { Nav } from "@/components/site/Nav";
 import { getCompanyPreview } from "@/lib/actions/company";
-import "@/app/(site)/company.css";
+import { isLocalStudioPreview } from "@/lib/studio-preview";
 export const metadata: Metadata = {
   title: "Preview",
   robots: { index: false },
 };
 async function PreviewShell({ children }: { children: React.ReactNode }) {
   const { copy } = await getCompanyPreview();
+  const local = await isLocalStudioPreview();
   return (
-    <div className="company-site">
+    <div className="public-site" style={{ position: "relative" }}>
       <p
-        className="bg-cyan-100 py-[10px] text-center text-[15px] text-cyan-800"
+        className="relative z-50 bg-cyan-100 py-[10px] text-center text-[15px] text-cyan-800"
         role="status"
       >
-        Draft preview — only signed-in admins can see this. Changes are not live
-        until published.
+        {local
+          ? "Local preview — sample content. Changes are not saved or published."
+          : "Draft preview — only signed-in admins can see this. Changes are not live until published."}
       </p>
       <Nav copy={copy} />
       <main>{children}</main>

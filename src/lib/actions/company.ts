@@ -2,6 +2,8 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
+import { isLocalStudioPreview } from "@/lib/studio-preview";
+import { studioCompanyDraft } from "@/lib/content/studio-samples";
 import {
   companySchema,
   defaultCompanyContent,
@@ -9,6 +11,7 @@ import {
 } from "@/lib/content/company";
 import { getCompanyContent } from "@/lib/queries/company";
 export async function getCompanyDraft() {
+  if (await isLocalStudioPreview()) return studioCompanyDraft;
   const { supabase } = await requireAdmin();
   const { data, error } = await supabase
     .from("company_content")
@@ -91,6 +94,7 @@ export async function publishCompanyDraft(revisionInput: number) {
   };
 }
 export async function getCompanyPreview(): Promise<CompanyContent> {
+  if (await isLocalStudioPreview()) return studioCompanyDraft.content;
   await requireAdmin();
   try {
     const draft = await getCompanyDraft();

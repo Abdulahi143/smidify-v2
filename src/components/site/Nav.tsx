@@ -10,13 +10,6 @@ import clsx from "clsx";
 import { defaultCompanyContent } from "@/lib/content/company";
 import { usePathname } from "next/navigation";
 
-const links = [
-  { href: "/work", label: "Work" },
-  { href: "/services", label: "Services" },
-  { href: "/process", label: "Process" },
-  { href: "/blog", label: "Blog" },
-];
-
 const FOCUSABLE = "a[href], button:not([disabled])";
 
 export function Nav({
@@ -25,6 +18,12 @@ export function Nav({
   copy?: Record<string, string>;
 }) {
   const pathname = usePathname();
+  const links = [
+    { href: "/work", label: copy.navProjects },
+    { href: "/services", label: copy.navExpertise },
+    { href: "/process", label: copy.navAbout },
+    { href: "/blog", label: copy.navVision },
+  ];
   const [open, setOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -68,7 +67,12 @@ export function Nav({
 
   return (
     <header
-      className={clsx("relative", pathname === "/" ? "cinema-nav" : "site-nav")}
+      className={clsx(
+        "relative",
+        pathname === "/" || pathname === "/admin/preview/website"
+          ? "cinema-nav"
+          : "site-nav",
+      )}
     >
       <nav
         aria-label="Main navigation"
@@ -121,7 +125,7 @@ export function Nav({
               "text-white no-underline hover:text-white",
             )}
           >
-            Request a quote
+            {copy.navContact}
           </Link>
         </div>
 
@@ -173,7 +177,7 @@ export function Nav({
               "mt-8 text-white no-underline hover:text-white",
             )}
           >
-            Request a quote
+            {copy.navContact}
           </Link>
         </div>
       )}

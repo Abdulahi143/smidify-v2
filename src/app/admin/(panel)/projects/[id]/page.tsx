@@ -6,7 +6,12 @@ import { idSchema } from "@/lib/validation";
 
 export const metadata: Metadata = { title: "Edit project" };
 
-export default async function EditProject({ params }: PageProps<"/admin/projects/[id]">) {
+// Studio pages wait for the request and viewer identity before rendering.
+export const instant = false;
+
+export default async function EditProject({
+  params,
+}: PageProps<"/admin/projects/[id]">) {
   const id = idSchema.safeParse((await params).id);
   if (!id.success) notFound();
   const project = await getProjectById(id.data);

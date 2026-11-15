@@ -2,11 +2,14 @@
 
 import { createPublicClient } from "@/lib/supabase/public";
 import { quoteRequestSchema } from "@/lib/validation";
+import { isLocalStudioPreview } from "@/lib/studio-preview";
 
 export type QuoteState = {
   status: "idle" | "success" | "error";
   message?: string;
-  fieldErrors?: Partial<Record<"email" | "name" | "phone" | "kind" | "message", string>>;
+  fieldErrors?: Partial<
+    Record<"email" | "name" | "phone" | "kind" | "message", string>
+  >;
 };
 
 const SUCCESS: QuoteState = {
@@ -18,6 +21,11 @@ export async function createQuoteRequest(
   _prev: QuoteState,
   formData: FormData,
 ): Promise<QuoteState> {
+  if (await isLocalStudioPreview())
+    return {
+      status: "error",
+      message: "Quote submissions are disabled in the local preview.",
+    };
   // Honeypot: real users never see or fill this field. Bots get a fake success.
   if (String(formData.get("website") ?? "") !== "") return SUCCESS;
 
@@ -43,7 +51,8 @@ export async function createQuoteRequest(
   if (error) {
     return {
       status: "error",
-      message: "Something went wrong. Please try again or email hello@smidify.com.",
+      message:
+        "Something went wrong. Please try again or email hello@smidify.com.",
     };
   }
   return SUCCESS;

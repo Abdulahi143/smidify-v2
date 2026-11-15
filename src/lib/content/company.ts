@@ -5,6 +5,11 @@ export const companySchema = z
   .object({
     copy: z
       .record(z.string(), z.string().max(5000))
+      // Fill newly introduced fields when reading drafts saved by an older Studio.
+      .transform((copy): Record<string, string> => ({
+        ...defaults.copy,
+        ...copy,
+      }))
       .superRefine((copy, ctx) => {
         if (
           Object.keys(copy).length !== companyKeys.length ||

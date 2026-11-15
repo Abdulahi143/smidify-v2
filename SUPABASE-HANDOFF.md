@@ -5,7 +5,7 @@ The public design, video, branding and team photos are local assets and do not n
 ## Connect
 
 1. Copy `.env.local.example` to `.env.local`. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` from the intended Supabase project. Set `NEXT_PUBLIC_SITE_URL` to the deployment domain. The current app uses the public anon key with row-level security; no service-role key is required by the current code.
-2. Link the intended project with the Supabase CLI and run `supabase db push`. Apply all three migrations in order: `0001_init.sql`, `0002_media_alt.sql`, `0003_quote_phone.sql`. These include tables, admin policies, the public `media` bucket and its upload policies. Do not reset a remote database.
+2. Link the intended project with the Supabase CLI and run `supabase db push`. Apply all four migrations in order: `0001_init.sql`, `0002_media_alt.sql`, `0003_quote_phone.sql`, `0004_company_content.sql`. These include tables, admin policies, the public `media` bucket and its upload policies. Do not reset a remote database.
 3. Add services content. `supabase/seed.sql` contains example services, fictional projects/posts and pipeline records; review it before use. Do not present its fictional customers or results as real work. For production, enter the approved content instead.
 4. Create each admin in Supabase Auth, then insert their user ID into `public.admins` as described in README. Configure the Auth site URL and allowed redirect URLs for the actual deployment.
 5. Restart the local app after changing environment variables. Set the same variables on the hosting service and rebuild for deployment. The image hostname allowlist is derived from the Supabase URL.
@@ -18,7 +18,7 @@ The homepage shows email contact while unconfigured and the existing quote form 
 
 Image fields contain storage paths relative to the `media` bucket, e.g. `projects/<id>/cover.jpg`, not full URLs. Uploads require an authenticated admin. Project and post images need meaningful alt text. The published content queries require `status = 'published'`.
 
-Team portraits are in `public/team/`; the hero video and poster are in `public/media/`. Names and roles are currently edited in `src/app/(site)/page.tsx`. Header/footer branding is in `public/brand/`. These are independent of Supabase.
+Team portraits are in `public/team/`; the hero video and poster are in `public/media/`. Team names and roles are edited in Studio → Website & milestones → Team. Homepage copy, navigation, footer, metadata and optional milestones use the same published website document; draft preview uses the current homepage renderer. Header/footer branding is in `public/brand/`. These are independent of Supabase.
 
 ## Verify after connection
 
