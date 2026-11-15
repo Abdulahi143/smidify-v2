@@ -1,50 +1,5 @@
 [
   {
-    "key": "metaTitle",
-    "group": "Search & browser",
-    "label": "Page title"
-  },
-  {
-    "key": "metaDescription",
-    "group": "Search & browser",
-    "label": "Page description"
-  },
-  {
-    "key": "navAbout",
-    "group": "Navigation",
-    "label": "About link"
-  },
-  {
-    "key": "navExpertise",
-    "group": "Navigation",
-    "label": "Expertise link"
-  },
-  {
-    "key": "navProjects",
-    "group": "Navigation",
-    "label": "Projects link"
-  },
-  {
-    "key": "navMilestones",
-    "group": "Navigation",
-    "label": "Milestones link"
-  },
-  {
-    "key": "navVision",
-    "group": "Navigation",
-    "label": "Vision link"
-  },
-  {
-    "key": "navTagline",
-    "group": "Navigation",
-    "label": "Header tagline"
-  },
-  {
-    "key": "navContact",
-    "group": "Navigation",
-    "label": "Contact link"
-  },
-  {
     "key": "heroLabel",
     "group": "Hero",
     "label": "Small heading"
@@ -62,12 +17,27 @@
   {
     "key": "heroLink",
     "group": "Hero",
-    "label": "Discover link"
+    "label": "Work link"
+  },
+  {
+    "key": "heroSecondaryLink",
+    "group": "Hero",
+    "label": "Contact link"
   },
   {
     "key": "heroFootnote",
     "group": "Hero",
     "label": "Bottom tagline"
+  },
+  {
+    "key": "heroScrollLabel",
+    "group": "Hero",
+    "label": "Scroll link"
+  },
+  {
+    "key": "navTagline",
+    "group": "Hero",
+    "label": "Studio description"
   },
   {
     "key": "aboutLabel",
@@ -87,7 +57,7 @@
   {
     "key": "aboutBody",
     "group": "About",
-    "label": "Team description"
+    "label": "Process link"
   },
   {
     "key": "expertiseLabel",
@@ -97,12 +67,7 @@
   {
     "key": "expertiseTitle",
     "group": "Expertise",
-    "label": "Heading"
-  },
-  {
-    "key": "expertiseIntro",
-    "group": "Expertise",
-    "label": "Introduction"
+    "label": "Section note"
   },
   {
     "key": "service1Title",
@@ -136,58 +101,88 @@
   },
   {
     "key": "projectsLabel",
-    "group": "Projects section",
+    "group": "Projects",
     "label": "Section label"
   },
   {
     "key": "projectsTitle",
-    "group": "Projects section",
+    "group": "Projects",
     "label": "Heading"
   },
   {
     "key": "projectsIntro",
-    "group": "Projects section",
-    "label": "Introduction"
+    "group": "Projects",
+    "label": "All projects link"
+  },
+  {
+    "key": "workEmptyLabel",
+    "group": "Projects",
+    "label": "Empty state label"
   },
   {
     "key": "projectsNote",
-    "group": "Projects section",
-    "label": "Note below projects"
+    "group": "Projects",
+    "label": "Empty state heading"
   },
   {
-    "key": "milestonesLabel",
-    "group": "Milestones section",
-    "label": "Section label"
-  },
-  {
-    "key": "milestonesTitle",
-    "group": "Milestones section",
-    "label": "Heading"
-  },
-  {
-    "key": "milestonesIntro",
-    "group": "Milestones section",
-    "label": "Introduction"
-  },
-  {
-    "key": "milestonesNote",
-    "group": "Milestones section",
-    "label": "Note below timeline"
+    "key": "workEmptyLink",
+    "group": "Projects",
+    "label": "Empty state link"
   },
   {
     "key": "visionLabel",
-    "group": "Vision",
+    "group": "Team",
     "label": "Section label"
   },
   {
     "key": "visionTitle",
-    "group": "Vision",
+    "group": "Team",
     "label": "Heading"
   },
   {
     "key": "visionBody",
-    "group": "Vision",
-    "label": "Description"
+    "group": "Team",
+    "label": "Introduction"
+  },
+  {
+    "key": "expertiseIntro",
+    "group": "Team",
+    "label": "Process link"
+  },
+  {
+    "key": "team1Name",
+    "group": "Team",
+    "label": "First team member name"
+  },
+  {
+    "key": "team1Role",
+    "group": "Team",
+    "label": "First team member role"
+  },
+  {
+    "key": "team2Name",
+    "group": "Team",
+    "label": "Second team member name"
+  },
+  {
+    "key": "team2Role",
+    "group": "Team",
+    "label": "Second team member role"
+  },
+  {
+    "key": "journalLabel",
+    "group": "Journal",
+    "label": "Section label"
+  },
+  {
+    "key": "journalTitle",
+    "group": "Journal",
+    "label": "Heading"
+  },
+  {
+    "key": "journalLink",
+    "group": "Journal",
+    "label": "Blog link"
   },
   {
     "key": "contactLabel",
@@ -210,13 +205,78 @@
     "label": "Email address"
   },
   {
+    "key": "quotePanelTitle",
+    "group": "Contact",
+    "label": "Form heading"
+  },
+  {
+    "key": "quotePanelIntro",
+    "group": "Contact",
+    "label": "Form introduction"
+  },
+  {
+    "key": "milestonesLabel",
+    "group": "Milestones section",
+    "label": "Section label"
+  },
+  {
+    "key": "milestonesTitle",
+    "group": "Milestones section",
+    "label": "Heading"
+  },
+  {
+    "key": "milestonesIntro",
+    "group": "Milestones section",
+    "label": "Introduction"
+  },
+  {
+    "key": "milestonesNote",
+    "group": "Milestones section",
+    "label": "Note below timeline"
+  },
+  {
+    "key": "navProjects",
+    "group": "Navigation",
+    "label": "Work link"
+  },
+  {
+    "key": "navExpertise",
+    "group": "Navigation",
+    "label": "Services link"
+  },
+  {
+    "key": "navAbout",
+    "group": "Navigation",
+    "label": "Process link"
+  },
+  {
+    "key": "navVision",
+    "group": "Navigation",
+    "label": "Blog link"
+  },
+  {
+    "key": "navContact",
+    "group": "Navigation",
+    "label": "Contact button"
+  },
+  {
     "key": "footerTagline",
     "group": "Footer",
-    "label": "Tagline"
+    "label": "Brand tagline"
   },
   {
     "key": "footerTop",
     "group": "Footer",
-    "label": "Back to top link"
+    "label": "Bottom tagline"
+  },
+  {
+    "key": "metaTitle",
+    "group": "Search & browser",
+    "label": "Page title"
+  },
+  {
+    "key": "metaDescription",
+    "group": "Search & browser",
+    "label": "Page description"
   }
 ]

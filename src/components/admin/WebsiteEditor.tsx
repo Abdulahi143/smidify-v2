@@ -1,4 +1,6 @@
 "use client";
+
+import { useStudioPreview } from "./StudioPreview";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui";
@@ -11,6 +13,7 @@ import type { CompanyContent } from "@/lib/content/company";
 import fields from "@/lib/content/company-fields.json";
 type Initial = Awaited<ReturnType<typeof getCompanyDraft>>;
 export function WebsiteEditor({ initial }: { initial: Initial }) {
+  const local = useStudioPreview();
   const [content, setContent] = useState(initial.content),
     [revision, setRevision] = useState(initial.revision),
     [publishedRevision, setPublishedRevision] = useState(
@@ -39,6 +42,12 @@ export function WebsiteEditor({ initial }: { initial: Initial }) {
     setError("");
   }
   async function act(action: "save" | "publish" | "preview") {
+    if (local) {
+      if (action === "preview")
+        window.open("/admin/preview/website", "_blank", "noopener");
+      else setNotice("Local preview does not save or publish changes.");
+      return;
+    }
     setBusy(true);
     setError("");
     setNotice("");
@@ -100,21 +109,31 @@ export function WebsiteEditor({ initial }: { initial: Initial }) {
     );
   }
   return (
-    <div>
-      <p className="meta">Company website</p>
-      <h1 className="mt-3 text-4xl">Website text & milestones</h1>
-      <p className="text-ink/70 mt-3">
-        Keep the approved design. Save a draft, preview it, then publish.
-      </p>
-      <div className="my-6 flex flex-wrap items-center gap-4">
+    <div className="studio-website-editor">
+      <header className="studio-page-header">
+        <div>
+          <p className="studio-eyebrow">Company website</p>
+          <h1>Website & milestones</h1>
+          <p className="studio-description">
+            Update your story. Save a draft, preview it, then publish.
+          </p>
+        </div>
+      </header>
+      <div
+        className="studio-website-tabs"
+        role="group"
+        aria-label="Website editor view"
+      >
         <Button
           variant={tab === "text" ? "primary" : "secondary"}
+          aria-pressed={tab === "text"}
           onClick={() => setTab("text")}
         >
           Website text
         </Button>
         <Button
           variant={tab === "milestones" ? "primary" : "secondary"}
+          aria-pressed={tab === "milestones"}
           onClick={() => setTab("milestones")}
         >
           Milestones
@@ -123,8 +142,8 @@ export function WebsiteEditor({ initial }: { initial: Initial }) {
           Edit projects →
         </Link>
       </div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-y border-neutral-300 py-5">
-        <span className="text-ink/70 text-sm">
+      <div className="studio-editor-toolbar">
+        <span className="studio-save-status" role="status" aria-live="polite">
           {dirty
             ? "Unsaved changes"
             : revision > publishedRevision
@@ -141,14 +160,16 @@ export function WebsiteEditor({ initial }: { initial: Initial }) {
           </Button>
           <Button
             variant="secondary"
-            disabled={busy || (!dirty && revision > 0)}
+            disabled={local || busy || (!dirty && revision > 0)}
             onClick={() => act("save")}
           >
             Save draft
           </Button>
           <Button
             disabled={
-              busy || (!dirty && revision > 0 && revision === publishedRevision)
+              local ||
+              busy ||
+              (!dirty && revision > 0 && revision === publishedRevision)
             }
             onClick={() => act("publish")}
           >
@@ -173,12 +194,17 @@ export function WebsiteEditor({ initial }: { initial: Initial }) {
         <legend className="sr-only">Website content</legend>
         {tab === "text" ? (
           <>
-            <div className="mb-6 flex flex-wrap gap-3">
+            <div
+              className="studio-field-groups"
+              role="group"
+              aria-label="Website section"
+            >
               {[...new Set(fields.map((f) => f.group))].map((g) => (
                 <button
                   key={g}
                   type="button"
                   onClick={() => setGroup(g)}
+                  aria-pressed={group === g}
                   className={
                     "rounded px-3 py-2 text-sm " +
                     (group === g ? "bg-cyan-100 text-cyan-800" : "bg-surface")
@@ -188,7 +214,7 @@ export function WebsiteEditor({ initial }: { initial: Initial }) {
                 </button>
               ))}
             </div>
-            <section className="rounded border border-neutral-300 bg-neutral-100 p-6">
+            <section className="studio-website-fields">
               <h2 className="mb-6 text-2xl">{group}</h2>
               <div className="grid gap-6">
                 {fields
@@ -204,6 +230,8 @@ export function WebsiteEditor({ initial }: { initial: Initial }) {
                             copy: { ...content.copy, [f.key]: v },
                           }),
                         f.key.endsWith("Title") ||
+                          f.key.endsWith("Tagline") ||
+                          f.key.endsWith("Role") ||
                           f.key.includes("Body") ||
                           f.key.includes("Intro") ||
                           f.key.includes("Description"),

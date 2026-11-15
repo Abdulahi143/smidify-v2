@@ -26,7 +26,10 @@ function fieldErrorsOf(error: z.ZodError): Record<string, string> {
   return out;
 }
 
-function revalidatePublic(table: Table, ...slugs: (string | null | undefined)[]) {
+function revalidatePublic(
+  table: Table,
+  ...slugs: (string | null | undefined)[]
+) {
   updateTag(table);
   revalidatePath("/");
   revalidatePath("/sitemap.xml");
@@ -47,16 +50,25 @@ async function slugTaken(table: Table, slug: string, id: string | null) {
   return data.length > 0;
 }
 
-export async function checkSlug(table: Table, slug: string, id: string | null): Promise<boolean> {
+export async function checkSlug(
+  table: Table,
+  slug: string,
+  id: string | null,
+): Promise<boolean> {
   const parsed = z
-    .object({ table: z.enum(["projects", "posts"]), slug: z.string().min(1).max(80), id: idSchema.nullable() })
+    .object({
+      table: z.enum(["projects", "posts"]),
+      slug: z.string().min(1).max(80),
+      id: idSchema.nullable(),
+    })
     .parse({ table, slug, id });
   return !(await slugTaken(parsed.table, parsed.slug, parsed.id));
 }
 
 export async function saveProject(input: unknown): Promise<SaveResult> {
   const parsed = projectSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, fieldErrors: fieldErrorsOf(parsed.error) };
+  if (!parsed.success)
+    return { ok: false, fieldErrors: fieldErrorsOf(parsed.error) };
   const v = parsed.data;
   const { supabase } = await requireAdmin();
 
@@ -65,7 +77,13 @@ export async function saveProject(input: unknown): Promise<SaveResult> {
   }
 
   const existing = v.id
-    ? (await supabase.from("projects").select("slug, status, published_at").eq("id", v.id).maybeSingle()).data
+    ? (
+        await supabase
+          .from("projects")
+          .select("slug, status, published_at")
+          .eq("id", v.id)
+          .maybeSingle()
+      ).data
     : null;
 
   const row = {
@@ -88,24 +106,40 @@ export async function saveProject(input: unknown): Promise<SaveResult> {
     featured: v.featured,
     status: v.status,
     published_at:
-      v.status === "published" ? (existing?.published_at ?? new Date().toISOString()) : (existing?.published_at ?? null),
+      v.status === "published"
+        ? (existing?.published_at ?? new Date().toISOString())
+        : (existing?.published_at ?? null),
   };
 
   const query = v.id
     ? supabase.from("projects").upsert({ ...row, id: v.id })
     : supabase.from("projects").insert(row);
-  const { data, error } = await query.select("id, slug, status, updated_at").single();
+  const { data, error } = await query
+    .select("id, slug, status, updated_at")
+    .single();
   if (error) {
-    return { ok: false, fieldErrors: {}, message: error.code === "23505" ? "That URL is already used." : error.message };
+    return {
+      ok: false,
+      fieldErrors: {},
+      message:
+        error.code === "23505" ? "That URL is already used." : error.message,
+    };
   }
 
   revalidatePublic("projects", existing?.slug, data.slug);
-  return { ok: true, id: data.id, slug: data.slug, status: data.status, savedAt: data.updated_at ?? new Date().toISOString() };
+  return {
+    ok: true,
+    id: data.id,
+    slug: data.slug,
+    status: data.status,
+    savedAt: data.updated_at ?? new Date().toISOString(),
+  };
 }
 
 export async function savePost(input: unknown): Promise<SaveResult> {
   const parsed = postSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, fieldErrors: fieldErrorsOf(parsed.error) };
+  if (!parsed.success)
+    return { ok: false, fieldErrors: fieldErrorsOf(parsed.error) };
   const v = parsed.data;
   const { supabase } = await requireAdmin();
 
@@ -114,7 +148,13 @@ export async function savePost(input: unknown): Promise<SaveResult> {
   }
 
   const existing = v.id
-    ? (await supabase.from("posts").select("slug, status, published_at").eq("id", v.id).maybeSingle()).data
+    ? (
+        await supabase
+          .from("posts")
+          .select("slug, status, published_at")
+          .eq("id", v.id)
+          .maybeSingle()
+      ).data
     : null;
 
   const row = {
@@ -128,36 +168,49 @@ export async function savePost(input: unknown): Promise<SaveResult> {
     featured: v.featured,
     status: v.status,
     published_at:
-      v.status === "published" ? (existing?.published_at ?? new Date().toISOString()) : (existing?.published_at ?? null),
+      v.status === "published"
+        ? (existing?.published_at ?? new Date().toISOString())
+        : (existing?.published_at ?? null),
   };
 
   const query = v.id
     ? supabase.from("posts").upsert({ ...row, id: v.id })
     : supabase.from("posts").insert(row);
-  const { data, error } = await query.select("id, slug, status, updated_at").single();
+  const { data, error } = await query
+    .select("id, slug, status, updated_at")
+    .single();
   if (error) {
-    return { ok: false, fieldErrors: {}, message: error.code === "23505" ? "That URL is already used." : error.message };
+    return {
+      ok: false,
+      fieldErrors: {},
+      message:
+        error.code === "23505" ? "That URL is already used." : error.message,
+    };
   }
 
   revalidatePublic("posts", existing?.slug, data.slug);
-  return { ok: true, id: data.id, slug: data.slug, status: data.status, savedAt: data.updated_at ?? new Date().toISOString() };
+  return {
+    ok: true,
+    id: data.id,
+    slug: data.slug,
+    status: data.status,
+    savedAt: data.updated_at ?? new Date().toISOString(),
+  };
 }
 
 async function remove(table: Table, idInput: string): Promise<void> {
   const id = idSchema.parse(idInput);
   const { supabase } = await requireAdmin();
-
-  const { data: row } = await supabase.from(table).select("*").eq("id", id).maybeSingle();
+  const { data: row, error: readError } = await supabase
+    .from(table)
+    .select("slug")
+    .eq("id", id)
+    .maybeSingle();
+  if (readError) throw readError;
   const { error } = await supabase.from(table).delete().eq("id", id);
   if (error) throw error;
-
-  if (row) {
-    const files = [row.cover_path, ...("gallery_paths" in row ? (row.gallery_paths ?? []) : [])].filter(
-      (p): p is string => Boolean(p),
-    );
-    if (files.length) await supabase.storage.from("media").remove(files);
-    revalidatePublic(table, row.slug);
-  }
+  // Assets can be reused by other content. Unused files are removed explicitly in Media.
+  revalidatePublic(table, row?.slug);
 }
 
 export async function deleteProject(id: string): Promise<void> {
@@ -170,24 +223,55 @@ export async function deletePost(id: string): Promise<void> {
 
 export async function saveService(input: ServiceInput): Promise<SaveResult> {
   const parsed = serviceSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, fieldErrors: fieldErrorsOf(parsed.error) };
+  if (!parsed.success)
+    return { ok: false, fieldErrors: fieldErrorsOf(parsed.error) };
   const { supabase } = await requireAdmin();
   const { id, ...rest } = parsed.data;
 
-  const { error } = await supabase.from("services").update(rest).eq("id", id);
+  const query = id
+    ? supabase.from("services").update(rest).eq("id", id)
+    : supabase.from("services").insert(rest);
+  const { data, error } = await query.select("id").single();
   if (error) return { ok: false, fieldErrors: {}, message: error.message };
 
   updateTag("services");
   revalidatePath("/");
   revalidatePath("/services");
   revalidatePath("/admin/services");
-  return { ok: true, id, slug: "", status: "", savedAt: new Date().toISOString() };
+  revalidatePath("/admin");
+  return {
+    ok: true,
+    id: data.id,
+    slug: "",
+    status: "",
+    savedAt: new Date().toISOString(),
+  };
 }
 
-export async function setQuoteHandled(id: string, handled: boolean): Promise<void> {
-  const parsed = z.object({ id: idSchema, handled: z.boolean() }).parse({ id, handled });
+export async function deleteService(input: string): Promise<void> {
   const { supabase } = await requireAdmin();
-  const { error } = await supabase.from("quote_requests").update({ handled: parsed.handled }).eq("id", parsed.id);
+  const id = idSchema.parse(input);
+  const { error } = await supabase.from("services").delete().eq("id", id);
+  if (error) throw error;
+  updateTag("services");
+  revalidatePath("/");
+  revalidatePath("/services");
+  revalidatePath("/admin/services");
+  revalidatePath("/admin");
+}
+
+export async function setQuoteHandled(
+  id: string,
+  handled: boolean,
+): Promise<void> {
+  const parsed = z
+    .object({ id: idSchema, handled: z.boolean() })
+    .parse({ id, handled });
+  const { supabase } = await requireAdmin();
+  const { error } = await supabase
+    .from("quote_requests")
+    .update({ handled: parsed.handled })
+    .eq("id", parsed.id);
   if (error) throw error;
   revalidatePath("/admin/quotes");
   revalidatePath("/admin");

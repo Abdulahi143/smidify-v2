@@ -1,24 +1,35 @@
 "use client";
 
+import { useStudioPreview } from "./StudioPreview";
+
 import Image from "next/image";
 import { useId, useRef, useState } from "react";
 import { Button, Field, Halftone, Input } from "@/components/ui";
 import { mediaUrl } from "@/lib/media";
 import { createClient } from "@/lib/supabase/client";
+import { MediaPicker } from "./MediaPicker";
 
 const MAX_BYTES = 8 * 1024 * 1024;
 const TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 
 /** Uploads straight to the `media` bucket as the signed-in admin; returns the object path. */
-async function upload(folder: string, file: File): Promise<string> {
-  if (!TYPES.includes(file.type)) throw new Error("Use a JPG, PNG, WebP or AVIF image.");
+export async function uploadMedia(folder: string, file: File): Promise<string> {
+  if (!TYPES.includes(file.type))
+    throw new Error("Use a JPG, PNG, WebP or AVIF image.");
   if (file.size > MAX_BYTES) throw new Error("Images must be under 8 MB.");
-  const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  const ext =
+    file.name
+      .split(".")
+      .pop()
+      ?.toLowerCase()
+      .replace(/[^a-z0-9]/g, "") || "jpg";
   const path = `${folder}/${crypto.randomUUID()}.${ext}`;
-  const { error } = await createClient().storage.from("media").upload(path, file, {
-    contentType: file.type,
-    cacheControl: "31536000",
-  });
+  const { error } = await createClient()
+    .storage.from("media")
+    .upload(path, file, {
+      contentType: file.type,
+      cacheControl: "31536000",
+    });
   if (error) throw error;
   return path;
 }
@@ -42,6 +53,7 @@ export function ImageUpload({
   altError?: string;
   aspect?: string;
 }) {
+  const local = useStudioPreview();
   const inputRef = useRef<HTMLInputElement>(null);
   const id = useId();
   const [busy, setBusy] = useState(false);
@@ -49,11 +61,11 @@ export function ImageUpload({
   const [over, setOver] = useState(false);
 
   async function handle(file: File | undefined) {
-    if (!file) return;
+    if (!file || busy || local) return;
     setBusy(true);
     setError(undefined);
     try {
-      onChange({ path: await upload(folder, file), alt });
+      onChange({ path: await uploadMedia(folder, file), alt });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Upload failed.");
     } finally {
@@ -79,17 +91,35 @@ export function ImageUpload({
           void handle(e.dataTransfer.files[0]);
         }}
       >
-        {path ? <Image src={mediaUrl(path)} alt="" fill sizes="720px" className="object-cover" /> : null}
+        {path ? (
+          <Image
+            src={mediaUrl(path)}
+            alt=""
+            fill
+            sizes="720px"
+            className="object-cover"
+          />
+        ) : null}
         <button
           type="button"
           aria-labelledby={`${id}-label`}
           onClick={() => inputRef.current?.click()}
-          disabled={busy}
+          disabled={busy || local}
           className="text-ink/70 absolute inset-0 z-10 flex cursor-pointer items-center justify-center text-[17px] disabled:cursor-wait"
         >
-          {busy ? "Uploading…" : path ? <span className="bg-paper rounded-md px-3 py-1">Replace image</span> : "Drop an image or click to upload"}
+          {busy ? (
+            "Uploading…"
+          ) : path ? (
+            <span className="bg-paper rounded-md px-3 py-1">Replace image</span>
+          ) : (
+            "Drop an image or click to upload"
+          )}
         </button>
       </Halftone>
+      <MediaPicker
+        disabled={busy}
+        onChoose={(next) => onChange({ path: next, alt })}
+      />
       <input
         ref={inputRef}
         type="file"
@@ -112,13 +142,19 @@ export function ImageUpload({
             <Input
               id={`${id}-alt`}
               value={alt}
+              disabled={busy || local}
               maxLength={200}
               aria-invalid={altError ? true : undefined}
               onChange={(e) => onChange({ path, alt: e.target.value })}
               placeholder="Describe the image for screen readers"
             />
           </Field>
-          <Button variant="ghost" className="self-start text-[15px]" onClick={() => onChange({ path: null, alt: "" })}>
+          <Button
+            variant="ghost"
+            disabled={busy || local}
+            className="self-start text-[15px]"
+            onClick={() => onChange({ path: null, alt: "" })}
+          >
             Remove image
           </Button>
         </div>
@@ -140,21 +176,27 @@ export function GalleryUpload({
   onChange: (next: { paths: string[]; alts: string[] }) => void;
   errors: Record<string, string>;
 }) {
+  const local = useStudioPreview();
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
 
   async function add(files: FileList | null) {
-    if (!files?.length) return;
+    if (!files?.length || busy || local) return;
     setBusy(true);
     setError(undefined);
+    const added: string[] = [];
     try {
-      const added: string[] = [];
-      for (const f of Array.from(files).slice(0, 12 - paths.length)) added.push(await upload(folder, f));
-      onChange({ paths: [...paths, ...added], alts: [...alts, ...added.map(() => "")] });
+      for (const f of Array.from(files).slice(0, 12 - paths.length))
+        added.push(await uploadMedia(folder, f));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Upload failed.");
     } finally {
+      if (added.length)
+        onChange({
+          paths: [...paths, ...added],
+          alts: [...alts, ...added.map(() => "")],
+        });
       setBusy(false);
     }
   }
@@ -167,21 +209,41 @@ export function GalleryUpload({
           {paths.map((p, i) => (
             <li key={p} className="flex flex-col gap-[10px]">
               <Halftone className="relative aspect-[4/3] bg-neutral-200">
-                <Image src={mediaUrl(p)} alt="" fill sizes="340px" className="object-cover" />
+                <Image
+                  src={mediaUrl(p)}
+                  alt=""
+                  fill
+                  sizes="340px"
+                  className="object-cover"
+                />
               </Halftone>
-              <Field label={`Alt text ${i + 1}`} htmlFor={`gallery-alt-${i}`} error={errors[`gallery_alts.${i}`]}>
+              <Field
+                label={`Alt text ${i + 1}`}
+                htmlFor={`gallery-alt-${i}`}
+                error={errors[`gallery_alts.${i}`]}
+              >
                 <Input
                   id={`gallery-alt-${i}`}
                   value={alts[i] ?? ""}
+                  disabled={busy || local}
                   maxLength={200}
-                  onChange={(e) => onChange({ paths, alts: alts.map((a, j) => (j === i ? e.target.value : a)) })}
+                  onChange={(e) =>
+                    onChange({
+                      paths,
+                      alts: alts.map((a, j) => (j === i ? e.target.value : a)),
+                    })
+                  }
                 />
               </Field>
               <Button
                 variant="ghost"
+                disabled={busy || local}
                 className="self-start text-[15px]"
                 onClick={() =>
-                  onChange({ paths: paths.filter((_, j) => j !== i), alts: alts.filter((_, j) => j !== i) })
+                  onChange({
+                    paths: paths.filter((_, j) => j !== i),
+                    alts: alts.filter((_, j) => j !== i),
+                  })
                 }
               >
                 Remove
@@ -209,7 +271,21 @@ export function GalleryUpload({
         </p>
       ) : null}
       {paths.length < 12 ? (
-        <Button variant="secondary" className="self-start" disabled={busy} onClick={() => inputRef.current?.click()}>
+        <MediaPicker
+          disabled={busy}
+          onChoose={(path) => {
+            if (!paths.includes(path))
+              onChange({ paths: [...paths, path], alts: [...alts, ""] });
+          }}
+        />
+      ) : null}
+      {paths.length < 12 ? (
+        <Button
+          variant="secondary"
+          className="self-start"
+          disabled={busy || local}
+          onClick={() => inputRef.current?.click()}
+        >
           {busy ? "Uploading…" : "Add images"}
         </Button>
       ) : null}

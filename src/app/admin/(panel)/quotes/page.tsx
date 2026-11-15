@@ -1,44 +1,74 @@
 import type { Metadata } from "next";
-import { Button, buttonStyles, Tag } from "@/components/ui";
-import { setQuoteHandled } from "@/lib/actions";
+import { connection } from "next/server";
+import { Tray } from "@phosphor-icons/react/dist/ssr/Tray";
+import { QuoteActions } from "@/components/admin/QuoteActions";
 import { relativeTime } from "@/lib/format";
 import { getAllQuoteRequests } from "@/lib/queries/admin-content";
 
 export const metadata: Metadata = { title: "Quote requests" };
 
+// Studio pages wait for the request and viewer identity before rendering.
+export const instant = false;
+
 export default async function QuotesPage() {
+  await connection();
   const quotes = await getAllQuoteRequests();
   return (
-    <div className="flex flex-col gap-[30px]">
-      <h1 className="text-[44px] leading-[52px]">Quote requests</h1>
-      {quotes.length === 0 ? <p className="text-ink/70">No requests yet.</p> : null}
-      <ul className="flex flex-col gap-[40px]">
+    <div className="studio-content-page">
+      <header className="studio-page-header">
+        <div>
+          <p className="studio-eyebrow">Your inbox</p>
+          <h1>Quote requests</h1>
+          <p className="studio-description">
+            Start a conversation, move an idea forward, or mark a request
+            handled.
+          </p>
+        </div>
+      </header>
+      {quotes.length === 0 ? (
+        <div className="studio-panel studio-empty">
+          <span className="studio-empty-icon">
+            <Tray size={26} aria-hidden="true" />
+          </span>
+          <h2>You&apos;re all caught up</h2>
+          <p>New requests from your website will appear here.</p>
+        </div>
+      ) : null}
+      <ul className="studio-quote-page-list">
         {quotes.map((q) => (
-          <li key={q.id} className={q.handled ? "opacity-70" : undefined}>
-            <div className="flex flex-wrap items-baseline gap-[15px]">
-              {q.kind ? <span className="meta text-cyan-700">{q.kind}</span> : null}
-              <span className="meta">{relativeTime(q.created_at)}</span>
-              {q.handled ? <Tag tone="neutral">Handled</Tag> : null}
-            </div>
-            <h2 className="mt-[5px] text-[24px] leading-[32px]">{q.company || q.name || q.email}</h2>
-            <p className="text-[15px]">
-              {q.email}
-              {q.phone ? <> · <a href={`tel:${q.phone}`}>{q.phone}</a></> : null}
-            </p>
-            {q.message ? <p className="text-ink/75 mt-[10px] max-w-[68ch] text-[17px] leading-7">{q.message}</p> : null}
-            <div className="mt-[15px] flex items-center gap-[20px]">
-              <a
-                href={`mailto:${q.email}?subject=${encodeURIComponent("Your Smidify quote request")}`}
-                className={buttonStyles("secondary", "no-underline hover:text-cyan-800")}
+          <li
+            key={q.id}
+            className="studio-panel studio-quote-detail"
+            data-handled={q.handled}
+          >
+            <div className="studio-quote-meta">
+              <span>{q.kind || "Enquiry"}</span>
+              <time dateTime={q.created_at ?? undefined}>
+                {relativeTime(q.created_at)}
+              </time>
+              <span
+                className={`studio-status ${q.handled ? "" : "studio-status-published"}`}
               >
-                Reply
-              </a>
-              <form action={setQuoteHandled.bind(null, q.id, !q.handled)}>
-                <Button type="submit" variant="ghost">
-                  {q.handled ? "Mark unhandled" : "Mark handled"}
-                </Button>
-              </form>
+                {q.handled ? "Handled" : "New"}
+              </span>
             </div>
+            <h2>{q.company || q.name || q.email}</h2>
+            <p>
+              <a href={`mailto:${q.email}`}>{q.email}</a>
+              {q.phone ? (
+                <>
+                  {" "}
+                  · <a href={`tel:${q.phone}`}>{q.phone}</a>
+                </>
+              ) : null}
+            </p>
+            {q.message ? <p>{q.message}</p> : null}
+            <QuoteActions
+              id={q.id}
+              email={q.email}
+              handled={q.handled}
+              showHandled
+            />
           </li>
         ))}
       </ul>

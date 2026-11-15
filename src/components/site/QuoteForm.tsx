@@ -6,21 +6,35 @@ import { createQuoteRequest, type QuoteState } from "@/lib/actions";
 
 const initial: QuoteState = { status: "idle" };
 
-export function QuoteForm({ variant = "inline" }: { variant?: "inline" }) {
+export function QuoteForm({
+  variant = "inline",
+  preview = false,
+}: {
+  variant?: "inline";
+  preview?: boolean;
+}) {
   const [state, action, pending] = useActionState(createQuoteRequest, initial);
   const emailError = state.fieldErrors?.email;
   const phoneError = state.fieldErrors?.phone;
 
   if (state.status === "success") {
     return (
-      <p role="status" className="text-cyan-700 text-[19px]">
+      <p role="status" className="text-[19px] text-cyan-700">
         {state.message}
       </p>
     );
   }
 
   return (
-    <form action={action} noValidate data-variant={variant}>
+    <form
+      action={preview ? undefined : action}
+      onSubmit={preview ? (event) => event.preventDefault() : undefined}
+      noValidate
+      data-variant={variant}
+      aria-label={
+        preview ? "Quote form preview, submissions disabled" : undefined
+      }
+    >
       <div className="flex flex-col gap-2.5 sm:flex-row">
         <label htmlFor="quote-email" className="sr-only">
           Email address
@@ -53,7 +67,12 @@ export function QuoteForm({ variant = "inline" }: { variant?: "inline" }) {
         <div aria-hidden className="absolute -left-[9999px]">
           <label>
             Website
-            <input type="text" name="website" tabIndex={-1} autoComplete="off" />
+            <input
+              type="text"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+            />
           </label>
         </div>
       </div>
@@ -69,7 +88,15 @@ export function QuoteForm({ variant = "inline" }: { variant?: "inline" }) {
         className="mt-2.5 block sm:w-[540px]"
       />
       <div className="mt-[20px]">
-        <Button type="submit" disabled={pending}>
+        <Button
+          type="submit"
+          disabled={pending || preview}
+          title={
+            preview
+              ? "Submissions are disabled in the local preview"
+              : undefined
+          }
+        >
           {pending ? "Sending…" : "Request a quote"}
         </Button>
       </div>
@@ -78,7 +105,9 @@ export function QuoteForm({ variant = "inline" }: { variant?: "inline" }) {
         role="alert"
         className="text-magenta mt-2.5 min-h-6 text-[15px]"
       >
-        {emailError ?? phoneError ?? (state.status === "error" ? state.message : null)}
+        {emailError ??
+          phoneError ??
+          (state.status === "error" ? state.message : null)}
       </p>
     </form>
   );

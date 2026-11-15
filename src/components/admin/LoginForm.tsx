@@ -11,7 +11,7 @@ export function LoginForm() {
   const { email, password } = state.fieldErrors ?? {};
 
   return (
-    <form action={action} noValidate className="flex flex-col gap-[20px]">
+    <form action={action} noValidate className="studio-login-form">
       <Field label="Email" htmlFor="login-email" error={email}>
         <Input
           id="login-email"
@@ -37,7 +37,7 @@ export function LoginForm() {
           {state.message}
         </p>
       ) : null}
-      <Button type="submit" disabled={pending} className="self-start">
+      <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Signing in…" : "Sign in"}
       </Button>
     </form>

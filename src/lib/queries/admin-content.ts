@@ -1,4 +1,11 @@
 import { requireAdmin } from "@/lib/auth";
+import { isLocalStudioPreview } from "@/lib/studio-preview";
+import {
+  studioProjects,
+  studioPosts,
+  studioServices,
+  studioQuotes,
+} from "@/lib/content/studio-samples";
 import type { ContentStatus } from "@/lib/queries/admin";
 import type { Database } from "@/lib/types/database";
 
@@ -17,18 +24,35 @@ export type ListRow = {
 
 export type ListFilter = { q?: string; status?: ContentStatus };
 
-export function parseStatus(v: string | string[] | undefined): ContentStatus | undefined {
-  return v === "draft" || v === "in_review" || v === "published" ? v : undefined;
+export function parseStatus(
+  v: string | string[] | undefined,
+): ContentStatus | undefined {
+  return v === "draft" || v === "in_review" || v === "published"
+    ? v
+    : undefined;
 }
 
 const like = (q: string) => `%${q.replace(/[%_\\]/g, "\\$&")}%`;
 
-async function list(table: "projects" | "posts", { q, status }: ListFilter): Promise<ListRow[]> {
+async function list(
+  table: "projects" | "posts",
+  { q, status }: ListFilter,
+): Promise<ListRow[]> {
+  if (await isLocalStudioPreview())
+    return (table === "projects" ? studioProjects : studioPosts).filter(
+      (row) =>
+        (!status || row.status === status) &&
+        (!q || row.title.toLowerCase().includes(q.toLowerCase())),
+    );
   const { supabase } = await requireAdmin();
-  let query = supabase.from(table).select("id, title, slug, status, updated_at");
+  let query = supabase
+    .from(table)
+    .select("id, title, slug, status, updated_at");
   if (q) query = query.ilike("title", like(q));
   if (status) query = query.eq("status", status);
-  const { data, error } = await query.order("updated_at", { ascending: false }).limit(200);
+  const { data, error } = await query
+    .order("updated_at", { ascending: false })
+    .limit(200);
   if (error) throw error;
   return data;
 }
@@ -37,20 +61,34 @@ export const listProjects = (f: ListFilter) => list("projects", f);
 export const listPosts = (f: ListFilter) => list("posts", f);
 
 export async function getProjectById(id: string): Promise<AdminProject | null> {
+  if (await isLocalStudioPreview())
+    return studioProjects.find((row) => row.id === id) ?? null;
   const { supabase } = await requireAdmin();
-  const { data, error } = await supabase.from("projects").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw error;
   return data;
 }
 
 export async function getPostById(id: string): Promise<AdminPost | null> {
+  if (await isLocalStudioPreview())
+    return studioPosts.find((row) => row.id === id) ?? null;
   const { supabase } = await requireAdmin();
-  const { data, error } = await supabase.from("posts").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("posts")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw error;
   return data;
 }
 
 export async function getPostCategoryOptions(): Promise<string[]> {
+  if (await isLocalStudioPreview())
+    return [...new Set(studioPosts.map((row) => row.category))].sort();
   const { supabase } = await requireAdmin();
   const { data, error } = await supabase.from("posts").select("category");
   if (error) throw error;
@@ -58,13 +96,18 @@ export async function getPostCategoryOptions(): Promise<string[]> {
 }
 
 export async function getAdminServices(): Promise<AdminService[]> {
+  if (await isLocalStudioPreview()) return studioServices;
   const { supabase } = await requireAdmin();
-  const { data, error } = await supabase.from("services").select("*").order("sort");
+  const { data, error } = await supabase
+    .from("services")
+    .select("*")
+    .order("sort");
   if (error) throw error;
   return data;
 }
 
 export async function getAllQuoteRequests(): Promise<AdminQuote[]> {
+  if (await isLocalStudioPreview()) return studioQuotes;
   const { supabase } = await requireAdmin();
   const { data, error } = await supabase
     .from("quote_requests")

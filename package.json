@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:studio": "SMIDIFY_STUDIO_PREVIEW=1 WATCHPACK_POLLING=1000 next dev --webpack --hostname 127.0.0.1",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "test:studio": "node --test tests/studio.test.mjs",
     "db:types": "supabase gen types typescript --local > src/lib/types/database.ts"
   },
   "dependencies": {

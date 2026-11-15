@@ -1,9 +1,17 @@
-import { sampleMode, samplePosts } from "@/lib/content/samples";
+import { sampleMode, samplePosts as designPosts } from "@/lib/content/samples";
 import { cacheLife, cacheTag } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { Database } from "@/lib/types/database";
 
 export type Post = Database["public"]["Tables"]["posts"]["Row"];
+
+// Studio demo records stay inside the admin preview. The public localhost view
+// uses empty states, matching a connected workspace with no published records.
+const samplePosts =
+  process.env.NODE_ENV === "development" &&
+  process.env.SMIDIFY_STUDIO_PREVIEW === "1"
+    ? []
+    : designPosts;
 
 export async function getLatestPosts(limit = 3): Promise<Post[]> {
   "use cache";

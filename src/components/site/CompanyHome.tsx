@@ -1,340 +1,310 @@
-import { Fragment } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { mediaUrl } from "@/lib/media";
 import type { CompanyContent } from "@/lib/content/company";
 import type { Project } from "@/lib/queries/projects";
-import { QuoteForm } from "@/components/site/QuoteForm";
-import { defaultCompanyContent } from "@/lib/content/company";
-import { mediaUrl } from "@/lib/media";
-export function Lines({
-  value,
-  accentLast = false,
-}: {
-  value: string | undefined;
-  accentLast?: boolean;
-}) {
-  const lines = (value ?? "").split("\n");
-  return (
-    <>
-      {lines.map((line, i) => (
-        <Fragment key={i}>
-          {i > 0 && <br />}
-          {accentLast && i === lines.length - 1 ? <span>{line}</span> : line}
-        </Fragment>
-      ))}
-    </>
-  );
-}
-const placeholders = [
-  {
-    id: "web",
-    category: "Websites",
-    title: "Website project",
-    customer: "Customer name to be added.",
-    brief: "Customer goals and challenges to be added.",
-    solution: "Project scope and delivered work to be added.",
-    outcome: "Verified results to be added.",
-    image: "",
-    url: "",
-    placeholder: true,
-  },
-  {
-    id: "apps",
-    category: "Applications",
-    title: "Application project",
-    customer: "Customer name to be added.",
-    brief: "Customer goals and challenges to be added.",
-    solution: "Project scope and delivered work to be added.",
-    outcome: "Verified results to be added.",
-    image: "",
-    url: "",
-    placeholder: true,
-  },
-  {
-    id: "systems",
-    category: "Infrastructure",
-    title: "Connected systems project",
-    customer: "Customer name to be added.",
-    brief: "Customer goals and challenges to be added.",
-    solution: "Project scope and delivered work to be added.",
-    outcome: "Verified results to be added.",
-    image: "",
-    url: "",
-    placeholder: true,
-  },
-];
-function CompanyProjects({ projects }: { projects: Project[] }) {
-  return (
-    <div className="project-grid">
-      {projects.length
-        ? projects.map((p, i) => (
-            <article className="project" key={p.id}>
-              {p.cover_path ? (
-                <div className="project-art">
-                  <img
-                    className="project-image"
-                    src={mediaUrl(p.cover_path)}
-                    alt={p.cover_alt || p.title}
-                    loading="lazy"
-                  />
-                </div>
-              ) : (
-                <div
-                  className={"project-art " + ["web", "apps", "systems"][i % 3]}
-                  aria-hidden="true"
-                >
-                  <div className="project-symbol" />
-                </div>
-              )}
-              <div className="project-type">{p.kinds.join(" / ")}</div>
-              <h3>
-                <Link href={"/work/" + p.slug}>{p.title}</Link>
-              </h3>
-              {p.client && <p>{p.client}</p>}
-              <dl>
-                {[
-                  ["The brief", p.problem || p.summary],
-                  ["Our solution", p.solution],
-                  ["The outcome", p.result],
-                ].map(([label, value]) =>
-                  value ? (
-                    <Fragment key={label}>
-                      <dt>{label}</dt>
-                      <dd>{value}</dd>
-                    </Fragment>
-                  ) : null,
-                )}
-              </dl>
-              <Link className="project-link" href={"/work/" + p.slug}>
-                View project ↗
-              </Link>
-            </article>
-          ))
-        : placeholders.map((p, i) => (
-            <article className="project" key={p.id}>
-              <div
-                className={"project-art " + ["web", "apps", "systems"][i % 3]}
-                aria-hidden="true"
-              >
-                <div className="project-symbol" />
-                <span>Project preview to come</span>
-              </div>
-              <div className="project-type">{p.category} / Placeholder</div>
-              <h3>{p.title}</h3>
-              <p>{p.customer}</p>
-              <dl>
-                {[
-                  ["The brief", p.brief],
-                  ["Our solution", p.solution],
-                  ["The outcome", p.outcome],
-                ].map(([label, value]) => (
-                  <Fragment key={label}>
-                    <dt>{label}</dt>
-                    <dd>{value}</dd>
-                  </Fragment>
-                ))}
-              </dl>
-            </article>
-          ))}
-    </div>
-  );
-}
+import type { Post } from "@/lib/queries/posts";
+import type { Service } from "@/lib/queries/services";
+import { PostRow } from "./PostRow";
+import { QuoteForm } from "./QuoteForm";
+import { HeroFilm } from "./HeroFilm";
+import styles from "./CompanyHome.module.css";
+import { Lines } from "./CopyLines";
+
+/** Shared by the live homepage and authenticated draft preview. */
 export function CompanyHome({
   content,
   projects,
+  posts,
+  services,
+  contentConfigured,
 }: {
   content: CompanyContent;
   projects: Project[];
+  posts: Post[];
+  services: Service[];
+  contentConfigured: boolean;
 }) {
   const { copy } = content;
+  const localPreview =
+    process.env.NODE_ENV === "development" &&
+    process.env.SMIDIFY_STUDIO_PREVIEW === "1";
+  const capabilities = [
+    { title: copy.service1Title, text: copy.service1Body, number: "01" },
+    { title: copy.service2Title, text: copy.service2Body, number: "02" },
+    { title: copy.service3Title, text: copy.service3Body, number: "03" },
+  ];
   return (
-    <div className="company-home">
-      <div className="hero">
-        <div className="eyebrow">
-          <Lines value={copy.heroLabel} />
+    <div className="cinema-home">
+      <section className="cinema-hero" aria-labelledby="hero-title">
+        <HeroFilm />
+        <div className="hero-shade" />
+        <div className="home-container hero-copy">
+          <p className="eyebrow">
+            <span className="status-dot" /> {copy.heroLabel}
+          </p>
+          <h1 id="hero-title">
+            <Lines value={copy.heroTitle} />
+          </h1>
+          <p className="hero-description">
+            <Lines value={copy.heroDescription} />
+          </p>
+          <div className="hero-actions">
+            <Link href="/work" className="cinema-button">
+              {copy.heroLink} <span aria-hidden="true">↗</span>
+            </Link>
+            <Link href="#quote" className="cinema-text-link">
+              {copy.heroSecondaryLink} <span aria-hidden="true">↗</span>
+            </Link>
+          </div>
         </div>
-        <h1>
-          <Lines value={copy.heroTitle} accentLast />
-        </h1>
-        <p className="hero-copy">
-          <Lines value={copy.heroDescription} />
-        </p>
-        <img
-          className="keystone-art"
-          src="/brand/smidify-keystone-sculpture.svg"
-          width="600"
-          height="640"
-          alt="A sage-green keystone sculpture: two curved supports and a central stone coming together."
-          fetchPriority="high"
-        />
-        <div className="hero-bottom">
-          <a href="#about">
-            <Lines value={copy.heroLink} /> <span className="arrow">{"↓"}</span>
+        <div className="hero-bottom home-container">
+          <span>{copy.heroFootnote}</span>
+          <a href="#intro" aria-label="Discover Smidify">
+            {copy.heroScrollLabel} <span aria-hidden="true">↓</span>
           </a>
-          <span className="small">
-            <Lines value={copy.heroFootnote} />
-          </span>
+          <span>{copy.navTagline}</span>
         </div>
-      </div>
-      {"\n"}
-      <section className="intro" id="about">
-        <div className="eyebrow">
-          <Lines value={copy.aboutLabel} />
-        </div>
+      </section>
+
+      <section id="intro" className="home-container home-intro">
+        <p className="eyebrow">{copy.aboutLabel}</p>
         <div>
           <h2>
-            <Lines value={copy.aboutTitle} />
+            <Lines value={copy.aboutTitle} accentLast />
           </h2>
           <p>
             <Lines value={copy.aboutIntro} />
           </p>
-          <p>
-            <Lines value={copy.aboutBody} />
-          </p>
+          <Link href="/process" className="light-text-link">
+            {copy.aboutBody} <span aria-hidden="true">↗</span>
+          </Link>
         </div>
       </section>
-      {"\n"}
-      <section id="approach">
-        <div className="section-top">
-          <div>
-            <div className="eyebrow">
-              <Lines value={copy.expertiseLabel} />
-            </div>
-            <h2>
-              <Lines value={copy.expertiseTitle} />
-            </h2>
-          </div>
-          <p>
-            <Lines value={copy.expertiseIntro} />
-          </p>
-        </div>
-        <div className="principles">
-          <article className="principle">
-            <span className="number">{"01"}</span>
-            <h3>
-              <Lines value={copy.service1Title} />
-            </h3>
-            <p>
-              <Lines value={copy.service1Body} />
-            </p>
-          </article>
-          <article className="principle">
-            <span className="number">{"02"}</span>
-            <h3>
-              <Lines value={copy.service2Title} />
-            </h3>
-            <p>
-              <Lines value={copy.service2Body} />
-            </p>
-          </article>
-          <article className="principle">
-            <span className="number">{"03"}</span>
-            <h3>
-              <Lines value={copy.service3Title} />
-            </h3>
-            <p>
-              <Lines value={copy.service3Body} />
-            </p>
-          </article>
-        </div>
-      </section>
-      {"\n"}
+
       <section
-        className="projects"
-        id="projects"
-        aria-labelledby="projects-title"
+        className="home-capabilities home-container"
+        aria-labelledby="capabilities-title"
       >
-        <div className="section-top">
-          <div>
-            <div className="eyebrow">
-              <Lines value={copy.projectsLabel} />
-            </div>
-            <h2 id="projects-title">
-              <Lines value={copy.projectsTitle} />
-            </h2>
-          </div>
-          <p>
-            <Lines value={copy.projectsIntro} />
+        <div className="section-heading">
+          <p id="capabilities-title" className="eyebrow">
+            {copy.expertiseLabel}
           </p>
+          <span>{copy.expertiseTitle}</span>
         </div>
-        <CompanyProjects projects={projects} />
-        <p className="placeholder-note">
-          <Lines
-            value={
-              projects.length &&
-              copy.projectsNote === defaultCompanyContent.copy.projectsNote
-                ? ""
-                : copy.projectsNote
-            }
-          />
-        </p>
-      </section>
-      {"\n"}
-      <section id="milestones" aria-labelledby="milestones-title">
-        <div className="section-top">
-          <div>
-            <div className="eyebrow">
-              <Lines value={copy.milestonesLabel} />
-            </div>
-            <h2 id="milestones-title">
-              <Lines value={copy.milestonesTitle} />
-            </h2>
-          </div>
-          <p>
-            <Lines value={copy.milestonesIntro} />
-          </p>
-        </div>
-        <div className="timeline">
-          {content.milestones.map((m) => (
-            <article className="milestone" key={m.id}>
-              <time>{m.date}</time>
-              <div>
-                <h3>{m.title}</h3>
-                <p>
-                  <Lines value={m.description} />
-                </p>
-              </div>
-            </article>
+        <div className="capability-grid">
+          {capabilities.map((item) => (
+            <Link
+              href="/services"
+              key={item.number}
+              className="capability-card"
+            >
+              <span className="capability-number">{item.number} /</span>
+              <h3>
+                {item.title}
+                <span aria-hidden="true">↗</span>
+              </h3>
+              <p>{item.text}</p>
+            </Link>
           ))}
         </div>
-        <p className="placeholder-note">
-          <Lines value={copy.milestonesNote} />
-        </p>
+        {services.length > 0 && (
+          <p className="service-detail">
+            {services.map((service) => service.title).join(" / ")}
+          </p>
+        )}
       </section>
-      {"\n"}
-      <section className="vision" id="vision">
-        <div className="eyebrow">
-          <Lines value={copy.visionLabel} />
+
+      <section className="home-work" aria-labelledby="work-title">
+        <div className="home-container">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">{copy.projectsLabel}</p>
+              <h2 id="work-title">
+                <Lines value={copy.projectsTitle} />
+              </h2>
+            </div>
+            <Link href="/work" className="cinema-text-link">
+              {copy.projectsIntro} <span aria-hidden="true">↗</span>
+            </Link>
+          </div>
+          {projects.length > 0 ? (
+            <div className="cinema-projects">
+              {projects.map((project, index) => (
+                <Link
+                  className="cinema-project"
+                  href={`/work/${project.slug}`}
+                  key={project.id}
+                >
+                  <div className={`project-visual project-visual-${index % 3}`}>
+                    {project.cover_path ? (
+                      <Image
+                        src={mediaUrl(project.cover_path)}
+                        alt={project.cover_alt || project.title}
+                        fill
+                        sizes="(min-width: 768px) 50vw, 100vw"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="project-placeholder" aria-hidden="true">
+                        <div />
+                        <span>
+                          SMIDIFY / {String(index + 1).padStart(2, "0")}
+                        </span>
+                      </div>
+                    )}
+                    <span className="project-open" aria-hidden="true">
+                      ↗
+                    </span>
+                  </div>
+                  <div className="project-caption">
+                    <h3>{project.title}</h3>
+                    <span>{project.kinds.join(" / ")}</span>
+                  </div>
+                  <p>{project.summary}</p>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="work-empty">
+              <span className="eyebrow">{copy.workEmptyLabel}</span>
+              <h3>
+                <Lines value={copy.projectsNote} />
+              </h3>
+              <Link href="#quote" className="cinema-button">
+                {copy.workEmptyLink} <span aria-hidden="true">↗</span>
+              </Link>
+            </div>
+          )}
         </div>
-        <div>
-          <h2>
-            <Lines value={copy.visionTitle} />
+      </section>
+
+      {content.milestones.length > 0 && (
+        <section
+          id="milestones"
+          className={`home-container ${styles.milestones}`}
+          aria-labelledby="milestones-title"
+        >
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">{copy.milestonesLabel}</p>
+              <h2 id="milestones-title">{copy.milestonesTitle}</h2>
+            </div>
+          </div>
+          {copy.milestonesIntro ? <p>{copy.milestonesIntro}</p> : null}
+          <ol className={styles.timeline}>
+            {content.milestones.map((milestone) => (
+              <li key={milestone.id}>
+                <span>{milestone.date}</span>
+                <h3>{milestone.title}</h3>
+                <p>
+                  <Lines value={milestone.description} />
+                </p>
+              </li>
+            ))}
+          </ol>
+          {copy.milestonesNote ? <p>{copy.milestonesNote}</p> : null}
+        </section>
+      )}
+
+      <section
+        className="home-container home-people"
+        aria-labelledby="people-title"
+      >
+        <div className="people-copy">
+          <p className="eyebrow">{copy.visionLabel}</p>
+          <h2 id="people-title">
+            <Lines value={copy.visionTitle} accentLast />
           </h2>
           <p>
             <Lines value={copy.visionBody} />
           </p>
+          <Link href="/process" className="light-text-link">
+            {copy.expertiseIntro} <span aria-hidden="true">↗</span>
+          </Link>
+        </div>
+        <div className="team-portraits" aria-label="Our team">
+          <figure className="team-portrait">
+            <div className="team-portrait-image">
+              <Image
+                src="/team/team-portrait-one.png"
+                alt={`${copy.team1Name}, ${copy.team1Role}`}
+                fill
+                sizes="(min-width: 768px) 23vw, 45vw"
+              />
+            </div>
+            <figcaption>
+              <h3>{copy.team1Name}</h3>
+              <p>
+                <Lines value={copy.team1Role} />
+              </p>
+            </figcaption>
+          </figure>
+          <figure className="team-portrait">
+            <div className="team-portrait-image">
+              <Image
+                src="/team/team-portrait-two.png"
+                alt={`${copy.team2Name}, ${copy.team2Role}`}
+                fill
+                sizes="(min-width: 768px) 23vw, 45vw"
+              />
+            </div>
+            <figcaption>
+              <h3>{copy.team2Name}</h3>
+              <p>
+                <Lines value={copy.team2Role} />
+              </p>
+            </figcaption>
+          </figure>
         </div>
       </section>
-      {"\n"}
-      <section className="contact" id="contact">
-        <div>
-          <div className="eyebrow">
-            <Lines value={copy.contactLabel} />
+
+      {posts.length > 0 && (
+        <section className="home-container home-journal">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">{copy.journalLabel}</p>
+              <h2>
+                <Lines value={copy.journalTitle} />
+              </h2>
+            </div>
+            <Link href="/blog" className="light-text-link">
+              {copy.journalLink} ↗
+            </Link>
           </div>
-          <h2>
-            <Lines value={copy.contactTitle} />
-          </h2>
-        </div>
-        <p className="contact-note">
-          <Lines value={copy.contactIntro} />
-          <br />
-          <a href={"mailto:" + copy.contactEmail} className="contact-email">
-            <Lines value={copy.contactEmail} />
-            {" ↗"}
-          </a>
-        </p>
-        <div id="quote" className="company-quote">
-          <h3>Have a project in mind?</h3>
-          <QuoteForm variant="inline" />
+          <div className="journal-grid">
+            {posts.map((post) => (
+              <PostRow key={post.id} post={post} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section id="quote" className="home-quote">
+        <div className="home-container quote-grid">
+          <div>
+            <p className="eyebrow">{copy.contactLabel}</p>
+            <h2>
+              <Lines value={copy.contactTitle} accentLast />
+            </h2>
+            <p>
+              <Lines value={copy.contactIntro} />
+            </p>
+          </div>
+          <div className="quote-panel">
+            <h3>{copy.quotePanelTitle}</h3>
+            <p>{copy.quotePanelIntro}</p>
+            {contentConfigured || localPreview ? (
+              <QuoteForm variant="inline" preview={localPreview} />
+            ) : (
+              <a
+                href={`mailto:${copy.contactEmail}`}
+                className="light-text-link"
+              >
+                Email {copy.contactEmail} <span aria-hidden="true">↗</span>
+              </a>
+            )}
+          </div>
         </div>
       </section>
     </div>

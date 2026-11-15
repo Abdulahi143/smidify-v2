@@ -1,16 +1,42 @@
-export function StatRail({ stats }: { stats: readonly { label: string; value: number }[] }) {
+import Link from "next/link";
+import { ArrowUpRight } from "@phosphor-icons/react/dist/ssr/ArrowUpRight";
+import { Article } from "@phosphor-icons/react/dist/ssr/Article";
+import { FileText } from "@phosphor-icons/react/dist/ssr/FileText";
+import { FolderSimple } from "@phosphor-icons/react/dist/ssr/FolderSimple";
+import { Tray } from "@phosphor-icons/react/dist/ssr/Tray";
+
+const icons = [FolderSimple, Article, FileText, Tray];
+
+export function StatRail({
+  stats,
+}: {
+  stats: readonly {
+    label: string;
+    value: number;
+    href: string;
+    note: string;
+  }[];
+}) {
   return (
-    <section aria-label="Totals">
-      <div className="rule-masthead" />
-      <dl className="grid grid-cols-2 gap-x-[30px] gap-y-[20px] py-[20px] md:grid-cols-4">
-        {stats.map(({ label, value }) => (
-          <div key={label}>
-            <dt className="meta">{label}</dt>
-            <dd className="mt-[5px] text-[40px] leading-[48px] font-semibold">{value}</dd>
-          </div>
-        ))}
-      </dl>
-      <div className="border-t border-ink" />
+    <section aria-label="Studio totals" className="studio-stats">
+      {stats.map(({ label, value, href, note }, i) => {
+        const Icon = icons[i % icons.length] ?? FolderSimple;
+        return (
+          <Link href={href} key={label} className="studio-stat">
+            <div className="studio-stat-top">
+              <span className={`studio-stat-icon studio-tone-${i}`}>
+                <Icon size={20} aria-hidden="true" />
+              </span>
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </div>
+            <dl>
+              <dt>{label}</dt>
+              <dd>{value.toLocaleString("en-GB")}</dd>
+            </dl>
+            <p>{note}</p>
+          </Link>
+        );
+      })}
     </section>
   );
 }

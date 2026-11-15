@@ -1,9 +1,20 @@
-import { sampleMode, sampleProjects } from "@/lib/content/samples";
+import {
+  sampleMode,
+  sampleProjects as designProjects,
+} from "@/lib/content/samples";
 import { cacheLife, cacheTag } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { Database } from "@/lib/types/database";
 
 export type Project = Database["public"]["Tables"]["projects"]["Row"];
+
+// Studio demo records stay inside the admin preview. The public localhost view
+// uses empty states, matching a connected workspace with no published records.
+const sampleProjects =
+  process.env.NODE_ENV === "development" &&
+  process.env.SMIDIFY_STUDIO_PREVIEW === "1"
+    ? []
+    : designProjects;
 
 export async function getFeaturedProjects(limit = 3): Promise<Project[]> {
   "use cache";
